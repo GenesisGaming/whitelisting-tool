@@ -1,0 +1,144 @@
+openapi: 3.0.2
+info:
+  title: Whitelisting Tool - OpenAPI definition
+  description: |-
+    The goal of this API is to manage the Ip lists that are registered for each operator, for them to be able to access 
+    GN system through the network.
+  contact:
+    email: genesis_dev@expenti.com
+  license:
+    name: Expenti
+    url: https://www.expenti.com/
+  version: "0.1"
+#  COMMENTED TO DEFAULT TO http://localhost:8080 for local dev
+#servers:
+#  - url: https://whitelisting-tool/api/v1
+tags:
+  - name: Operator
+    description: Manage operators' whitelisted IPs
+paths:
+  /operator:
+    get:
+      tags:
+        - Operator
+      summary: Gets all operators
+      description: Gets all operators
+      operationId: getOperators
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Operator'
+        '500':
+          description: Internal server error
+      security:
+        - whitelist_auth:
+            - write:operators
+    post:
+      tags:
+        - Operator
+      summary: Add a new operator
+      description: Creates the operator in the storage with an empty list of IPs
+      operationId: addOperator
+      requestBody:
+        description: New Operator
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Operator'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '201':
+          description: Successful operation
+        '400':
+          description: Invalid input format or the partner already existed
+        '500':
+          description: Internal server error
+      security:
+        - whitelist_auth:
+            - write:operators
+  /operator/{operatorCode}/ip:
+    get:
+      tags:
+        - Operator
+      summary: Get an Operator's IP list
+      description: Get an Operator's whitelisted IP list
+      operationId: getOperatorIpList
+      parameters:
+        - name: operatorCode
+          in: path
+          description: Operator code
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '404':
+          description: Operator not found
+        '500':
+          description: Internal server error
+      security:
+        - whitelist_auth:
+            - write:operators
+    post:
+      tags:
+        - Operator
+      summary: Add new IPs to the partner's list
+      description: Add new IPs to the partner's list
+      operationId: addIps
+      parameters:
+        - name: operatorCode
+          in: path
+          description: Operator code
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+      requestBody:
+        description: IP array
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                minLength: 1
+                maxLength: 45
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Invalid input format or the partner already existed
+        '500':
+          description: Internal server error
+      security:
+        - whitelist_auth:
+            - write:operators
+
+components:
+  schemas:
+    Operator:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Operator code
+          minLength: 1
+          maxLength: 30

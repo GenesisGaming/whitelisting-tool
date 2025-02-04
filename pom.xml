@@ -15,6 +15,7 @@
         <quarkus.platform.version>3.15.3</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.3.1</surefire-plugin.version>
+        <openapi-generator-maven-plugin.version>7.11.0</openapi-generator-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -55,11 +56,6 @@
             <groupId>io.quarkiverse.config</groupId>
             <artifactId>quarkus-config-hocon</artifactId>
             <version>2.4.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkiverse.openapi.generator</groupId>
-            <artifactId>quarkus-openapi-generator</artifactId>
-            <version>2.8.0-lts</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -104,6 +100,24 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.2.20</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>1.6.12</version>
         </dependency>
     </dependencies>
 
@@ -160,6 +174,44 @@
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi-generator-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>APIs</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>jaxrs-spec</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/META-INF/openapi.yml</inputSpec>
+                            <typeMappings>
+                                <typeMapping>Double=java.math.BigDecimal</typeMapping>
+                            </typeMappings>
+                            <library>quarkus</library>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+                            <additionalProperties>useSwaggerAnnotations=true,supportAsync=false
+                            </additionalProperties>
+                            <configOptions>
+                                <useTags>true</useTags>
+                                <sourceFolder>.</sourceFolder>
+                                <basePackage>com.genesis.whitelist</basePackage>
+                                <apiPackage>com.genesis.whitelist</apiPackage>
+                                <modelPackage>com.genesis.whitelist.model</modelPackage>
+                                <performBeanValidation>true</performBeanValidation>
+                                <openApiNullable>false</openApiNullable>
+                                <documentationProvider>none</documentationProvider>
+                                <returnResponse>true</returnResponse>
+                                <interfaceOnly>true</interfaceOnly>
+                                <serializableModel>true</serializableModel>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
