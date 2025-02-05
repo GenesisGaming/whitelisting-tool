@@ -24,8 +24,8 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		"Partner F"
 	];
 
-	// Disable initial fields
 	const disableFields = () => {
+
 		whitelistRadios.forEach( radio => radio.disabled = true );
 		newIpsTextarea.disabled = true;
 		commentsTextarea.disabled = true;
@@ -33,7 +33,15 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		addPartnerBtn.disabled = true;
 	};
 
-	// Enable fields based on conditions
+	const clearFields = () => {
+
+		newIpsTextarea.value = '';
+		commentsTextarea.value = '';
+		currentIpsTextarea.value = '';
+		whitelistRadios.forEach( radio => radio.checked = false );
+	};
+
+	// Implement cascade enabling fields
 	const enableFields = () => {
 		whitelistRadios.forEach( radio => radio.disabled = false );
 		addPartnerBtn.disabled = true
@@ -45,7 +53,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	};
 
 	const enableAddButton = () => {
-		// Enable the Add button if both New IPs and Comments are not empty
 		addIpsBtn.disabled = newIpsTextarea.value.trim() === '' || commentsTextarea.value.trim() === '';
 	};
 
@@ -62,6 +69,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			addPartnerBtn.disabled = true;
 		} else {
 			disableFields();
+			clearFields();
 			addPartnerBtn.disabled = false;
 		}
 
@@ -75,8 +83,8 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 			listItem.addEventListener( "click", function () {
 				partnerInput.value = partner;
-				dropdown.style.display = "none";  // Hide dropdown on select
-				enableFields();  // Enable the radio buttons if a valid partner is selected
+				dropdown.style.display = "none";
+				enableFields();
 			} );
 
 			dropdown.appendChild( listItem );
@@ -98,20 +106,21 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 			listItem.addEventListener( "click", function () {
 				partnerInput.value = partner;
-				dropdown.style.display = "none";  // Hide dropdown on select
-				enableFields();  // Enable the radio buttons if a valid partner is selected
+				dropdown.style.display = "none";
+				enableFields();
+				clearFields();
 			} );
 
 			dropdown.appendChild( listItem );
 		} );
 
-		dropdown.style.display = "block"; // Always show the dropdown on click
+		dropdown.style.display = "block";
 	} );
 
 	// Event listener for selecting a whitelist radio button
 	whitelistRadios.forEach( radio => {
 		radio.addEventListener( 'change', function () {
-			enableIpsAndComments();  // Enable IP and Comment fields when a radio is selected
+			enableIpsAndComments(); 
 		} );
 	} );
 
@@ -119,7 +128,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	newIpsTextarea.addEventListener( 'input', enableAddButton );
 	commentsTextarea.addEventListener( 'input', enableAddButton );
 
-	// Hide the dropdown if the user clicks outside
 	document.addEventListener( "click", function ( event ) {
 		if ( !event.target.closest( ".dropdown-container" ) ) {
 			dropdown.style.display = "none";
@@ -128,7 +136,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 	// Validate IP address or IP/CIDR range (e.g., 192.168.1.1/24 or 192.168.1.1/32)
 	function isValidIp ( ip ) {
-		// Regex for a valid IPv4 address, and also matches CIDR notation (/0 to /32)
 		const ipRegex = /^(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})(\/(3[0-2]|[1-2]?[0-9]))?$/;
 		return ipRegex.test( ip );
 	}
@@ -173,6 +180,8 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			ips: uniqueIps,
 			comments: comments
 		};
+
+		addIpsBtn.disabled = true;
 
 		// Print the validated object
 		console.log( logObject );
