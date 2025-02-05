@@ -56,7 +56,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	partnerInput.addEventListener( 'input', function () {
 		const query = partnerInput.value.trim().toLowerCase();
 		const isPartnerValid = partners.some( partner => partner.toLowerCase() === query );
-		console.log(query);
+		console.log( query );
 
 		if ( query === "" || isPartnerValid ) {
 			addPartnerBtn.disabled = true;
@@ -126,11 +126,13 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		}
 	} );
 
-	// Validate IP address
+	// Validate IP address or IP/CIDR range (e.g., 192.168.1.1/24 or 192.168.1.1/32)
 	function isValidIp ( ip ) {
-		const ipRegex = /^(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})$/;
+		// Regex for a valid IPv4 address, and also matches CIDR notation (/0 to /32)
+		const ipRegex = /^(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})(\/(3[0-2]|[1-2]?[0-9]))?$/;
 		return ipRegex.test( ip );
 	}
+
 
 	// Handle adding IPs
 	addIpsBtn.addEventListener( 'click', function () {
