@@ -26,7 +26,7 @@
 						</div>
 					</div>
 
-					<button class="btn btn-primary mx-3">+</button>
+					<button id="add-partner-btn" class="btn btn-primary mx-3" disabled>+</button>
 				</div>
 
 				<div class="mt-3">
@@ -34,11 +34,11 @@
 					<div>
 						<label class="form-label">Select Whitelist Type:</label>
 						<div class="form-check">
-							<input class="form-check-input" type="radio" name="whitelistType" id="bo">
+							<input class="form-check-input" type="radio" name="whitelistType" id="bo" disabled>
 							<label class="form-check-label" for="bo">BackOffice</label>
 						</div>
 						<div class="form-check">
-							<input class="form-check-input" type="radio" name="whitelistType" id="api">
+							<input class="form-check-input" type="radio" name="whitelistType" id="api" disabled>
 							<label class="form-check-label" for="api">API</label>
 						</div>
 					</div>
@@ -51,11 +51,11 @@
 				<div class="d-flex align-items-center gap-3">
 					<div class="flex-grow-1">
 						<label for="new-ips" class="form-label">New IPs:</label>
-						<textarea id="new-ips" class="form-control" rows="3"
-							placeholder="Enter new IP addresses"></textarea>
+						<textarea id="new-ips" class="form-control" rows="3" placeholder="Enter new IP addresses"
+							disabled></textarea>
 					</div>
 
-					<button id="add-ips-btn" class="btn btn-success">Add >></button>
+					<button id="add-ips-btn" class="btn btn-success" disabled>Add >></button>
 
 					<div class="flex-grow-1">
 						<label for="current-ips" class="form-label">Current IPs</label>
@@ -69,8 +69,8 @@
 				<h4>Comments</h4>
 				<div>
 					<label for="comments" class="form-label">Comments:</label>
-					<textarea id="comments" class="form-control" rows="4"
-						placeholder="Add any comments here"></textarea>
+					<textarea id="comments" class="form-control" rows="4" placeholder="Add any comments here"
+						disabled></textarea>
 				</div>
 			</div>
 		</div>

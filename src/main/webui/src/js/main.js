@@ -6,11 +6,13 @@ import * as bootstrap from 'bootstrap';
 
 document.addEventListener( 'DOMContentLoaded', function () {
 	const addIpsBtn = document.getElementById( 'add-ips-btn' );
+	const addPartnerBtn = document.getElementById( 'add-partner-btn' );
 	const newIpsTextarea = document.getElementById( 'new-ips' );
 	const currentIpsTextarea = document.getElementById( 'current-ips' );
 	const partnerInput = document.getElementById( 'partner' );
 	const dropdown = document.getElementById( 'partner-dropdown' );
 	const commentsTextarea = document.getElementById( 'comments' );
+	const whitelistRadios = document.querySelectorAll( 'input[name="whitelistType"]' );
 
 	// Mock data for partners input
 	const partners = [
@@ -22,12 +24,49 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		"Partner F"
 	];
 
-	// Event listener for user input to filter dropdown
-	partnerInput.addEventListener( 'input', function () {
-		const query = partnerInput.value.toLowerCase();
-		const filteredPartners = partners.filter( partner => partner.toLowerCase().includes( query ) );
+	// Disable initial fields
+	const disableFields = () => {
+		whitelistRadios.forEach( radio => radio.disabled = true );
+		newIpsTextarea.disabled = true;
+		commentsTextarea.disabled = true;
+		addIpsBtn.disabled = true;
+		addPartnerBtn.disabled = true;
+	};
 
-		// Display matching options
+	// Enable fields based on conditions
+	const enableFields = () => {
+		whitelistRadios.forEach( radio => radio.disabled = false );
+		addPartnerBtn.disabled = true
+	};
+
+	const enableIpsAndComments = () => {
+		newIpsTextarea.disabled = false;
+		commentsTextarea.disabled = false;
+	};
+
+	const enableAddButton = () => {
+		// Enable the Add button if both New IPs and Comments are not empty
+		addIpsBtn.disabled = newIpsTextarea.value.trim() === '' || commentsTextarea.value.trim() === '';
+	};
+
+	// Initial disable of fields
+	disableFields();
+
+	// Event listener for typing in partner input
+	partnerInput.addEventListener( 'input', function () {
+		const query = partnerInput.value.trim().toLowerCase();
+		const isPartnerValid = partners.some( partner => partner.toLowerCase() === query );
+		console.log(query);
+
+		if ( query === "" || isPartnerValid ) {
+			addPartnerBtn.disabled = true;
+		} else {
+			disableFields();
+			addPartnerBtn.disabled = false;
+		}
+
+		// Handle dropdown filtering
+		const filteredPartners = partners.filter( partner => partner.toLowerCase().includes( query ) );
 		dropdown.innerHTML = "";
 		filteredPartners.forEach( partner => {
 			const listItem = document.createElement( "li" );
@@ -37,21 +76,20 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			listItem.addEventListener( "click", function () {
 				partnerInput.value = partner;
 				dropdown.style.display = "none";  // Hide dropdown on select
+				enableFields();  // Enable the radio buttons if a valid partner is selected
 			} );
 
 			dropdown.appendChild( listItem );
 		} );
 
-		// Show dropdown if matches are found
 		dropdown.style.display = filteredPartners.length > 0 ? "block" : "none";
 	} );
 
 	// Event listener to open the dropdown when clicking the input field
 	partnerInput.addEventListener( 'click', function () {
-		const query = partnerInput.value.toLowerCase();
+		const query = partnerInput.value.trim().toLowerCase();
 		const filteredPartners = partners.filter( partner => partner.toLowerCase().includes( query ) );
 
-		// Show dropdown even if no text is typed (show all items)
 		dropdown.innerHTML = "";
 		filteredPartners.forEach( partner => {
 			const listItem = document.createElement( "li" );
@@ -61,6 +99,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			listItem.addEventListener( "click", function () {
 				partnerInput.value = partner;
 				dropdown.style.display = "none";  // Hide dropdown on select
+				enableFields();  // Enable the radio buttons if a valid partner is selected
 			} );
 
 			dropdown.appendChild( listItem );
@@ -68,6 +107,17 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 		dropdown.style.display = "block"; // Always show the dropdown on click
 	} );
+
+	// Event listener for selecting a whitelist radio button
+	whitelistRadios.forEach( radio => {
+		radio.addEventListener( 'change', function () {
+			enableIpsAndComments();  // Enable IP and Comment fields when a radio is selected
+		} );
+	} );
+
+	// Event listener for the New IPs and Comments fields to enable the Add button
+	newIpsTextarea.addEventListener( 'input', enableAddButton );
+	commentsTextarea.addEventListener( 'input', enableAddButton );
 
 	// Hide the dropdown if the user clicks outside
 	document.addEventListener( "click", function ( event ) {
