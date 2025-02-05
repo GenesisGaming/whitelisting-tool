@@ -120,7 +120,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	// Event listener for selecting a whitelist radio button
 	whitelistRadios.forEach( radio => {
 		radio.addEventListener( 'change', function () {
-			enableIpsAndComments(); 
+			enableIpsAndComments();
 		} );
 	} );
 
@@ -141,7 +141,23 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	}
 
 
-	// Handle adding IPs
+	// Handle adding a partner (confirmation required)
+	addPartnerBtn.addEventListener( 'click', function () {
+		const partnerName = partnerInput.value.trim();
+
+		if ( partnerName === '' ) return;
+
+		const confirmAdd = confirm( `Are you sure you want to add "${ partnerName }" as a new partner?` );
+
+		if ( confirmAdd ) {
+			partners.push( partnerName ); // Add to the partner list
+			partnerInput.value = ''; // Clear input field
+			addPartnerBtn.disabled = true;
+			console.log( `Partner "${ partnerName }" added.` );
+		}
+	} );
+
+	// Handle adding IPs (confirmation required)
 	addIpsBtn.addEventListener( 'click', function () {
 		const newIps = newIpsTextarea.value
 			.split( '\n' )
@@ -154,36 +170,40 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		const invalidIps = newIps.filter( ip => !isValidIp( ip ) );
 
 		if ( invalidIps.length > 0 ) {
-			console.error( `Invalid IP(s) detected: ${ invalidIps.join( ', ' ) }` );
+			alert( `Invalid IP(s) detected:\n${ invalidIps.join( '\n' ) }` );
 			return;
 		}
 
-		const currentIps = currentIpsTextarea.value
-			.split( '\n' )
-			.map( ip => ip.trim() )
-			.filter( ip => ip.length > 0 );
+		const confirmAdd = confirm( `Are you sure you want to add the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
 
-		const uniqueIps = Array.from( new Set( [ ...currentIps, ...newIps ] ) );
+		if ( confirmAdd ) {
+			const currentIps = currentIpsTextarea.value
+				.split( '\n' )
+				.map( ip => ip.trim() )
+				.filter( ip => ip.length > 0 );
 
-		currentIpsTextarea.value = uniqueIps.join( '\n' );
-		newIpsTextarea.value = '';
-		newIpsTextarea.focus();
+			const uniqueIps = Array.from( new Set( [ ...currentIps, ...newIps ] ) );
 
-		const selectedPartner = partnerInput.value || null;
-		const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.id;
-		const comments = commentsTextarea.value.trim();
+			currentIpsTextarea.value = uniqueIps.join( '\n' );
+			newIpsTextarea.value = '';
+			newIpsTextarea.focus();
 
-		// Create the log object
-		const logObject = {
-			partner: selectedPartner,
-			whitelisting: selectedWhitelist,
-			ips: uniqueIps,
-			comments: comments
-		};
+			const selectedPartner = partnerInput.value || null;
+			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.id;
+			const comments = commentsTextarea.value.trim();
 
-		addIpsBtn.disabled = true;
+			// Create the log object
+			const logObject = {
+				partner: selectedPartner,
+				whitelisting: selectedWhitelist,
+				ips: uniqueIps,
+				comments: comments
+			};
 
-		// Print the validated object
-		console.log( logObject );
+			addIpsBtn.disabled = true;
+
+			// Print the validated object
+			console.log( logObject );
+		}
 	} );
 } );
