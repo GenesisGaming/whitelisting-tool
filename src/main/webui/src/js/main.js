@@ -8,16 +8,81 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	const addIpsBtn = document.getElementById( 'add-ips-btn' );
 	const newIpsTextarea = document.getElementById( 'new-ips' );
 	const currentIpsTextarea = document.getElementById( 'current-ips' );
-	const partnerSelect = document.getElementById( 'partner' );
+	const partnerInput = document.getElementById( 'partner' );
+	const dropdown = document.getElementById( 'partner-dropdown' );
 	const commentsTextarea = document.getElementById( 'comments' );
 
-	// validate IP address
+	// Mock data for partners input
+	const partners = [
+		"Partner A",
+		"Partner B",
+		"Partner C",
+		"Partner D",
+		"Partner E",
+		"Partner F"
+	];
+
+	// Event listener for user input to filter dropdown
+	partnerInput.addEventListener( 'input', function () {
+		const query = partnerInput.value.toLowerCase();
+		const filteredPartners = partners.filter( partner => partner.toLowerCase().includes( query ) );
+
+		// Display matching options
+		dropdown.innerHTML = "";
+		filteredPartners.forEach( partner => {
+			const listItem = document.createElement( "li" );
+			listItem.classList.add( "dropdown-item" );
+			listItem.textContent = partner;
+
+			listItem.addEventListener( "click", function () {
+				partnerInput.value = partner;
+				dropdown.style.display = "none";  // Hide dropdown on select
+			} );
+
+			dropdown.appendChild( listItem );
+		} );
+
+		// Show dropdown if matches are found
+		dropdown.style.display = filteredPartners.length > 0 ? "block" : "none";
+	} );
+
+	// Event listener to open the dropdown when clicking the input field
+	partnerInput.addEventListener( 'click', function () {
+		const query = partnerInput.value.toLowerCase();
+		const filteredPartners = partners.filter( partner => partner.toLowerCase().includes( query ) );
+
+		// Show dropdown even if no text is typed (show all items)
+		dropdown.innerHTML = "";
+		filteredPartners.forEach( partner => {
+			const listItem = document.createElement( "li" );
+			listItem.classList.add( "dropdown-item" );
+			listItem.textContent = partner;
+
+			listItem.addEventListener( "click", function () {
+				partnerInput.value = partner;
+				dropdown.style.display = "none";  // Hide dropdown on select
+			} );
+
+			dropdown.appendChild( listItem );
+		} );
+
+		dropdown.style.display = "block"; // Always show the dropdown on click
+	} );
+
+	// Hide the dropdown if the user clicks outside
+	document.addEventListener( "click", function ( event ) {
+		if ( !event.target.closest( ".dropdown-container" ) ) {
+			dropdown.style.display = "none";
+		}
+	} );
+
+	// Validate IP address
 	function isValidIp ( ip ) {
 		const ipRegex = /^(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})$/;
 		return ipRegex.test( ip );
 	}
 
-	// handle adding IPs
+	// Handle adding IPs
 	addIpsBtn.addEventListener( 'click', function () {
 		const newIps = newIpsTextarea.value
 			.split( '\n' )
@@ -26,7 +91,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 		if ( newIps.length === 0 ) return;
 
-		// validate each IP
+		// Validate each IP
 		const invalidIps = newIps.filter( ip => !isValidIp( ip ) );
 
 		if ( invalidIps.length > 0 ) {
@@ -42,15 +107,14 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		const uniqueIps = Array.from( new Set( [ ...currentIps, ...newIps ] ) );
 
 		currentIpsTextarea.value = uniqueIps.join( '\n' );
-
 		newIpsTextarea.value = '';
 		newIpsTextarea.focus();
 
-		const selectedPartner = partnerSelect.value || null;
+		const selectedPartner = partnerInput.value || null;
 		const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.id;
 		const comments = commentsTextarea.value.trim();
 
-		// create the log object
+		// Create the log object
 		const logObject = {
 			partner: selectedPartner,
 			whitelisting: selectedWhitelist,
