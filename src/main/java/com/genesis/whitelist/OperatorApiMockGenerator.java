@@ -22,6 +22,7 @@ public class OperatorApiMockGenerator {
                 "whitelistType", addIpsRequest.getWhitelistType(),
                 "newIps", addIpsRequest.getNewIps()
             ))
+            .header("test", "addIps : " + operatorCode + " IPs: " + addIpsRequest.getNewIps())
             .build();
     }
 
@@ -36,6 +37,7 @@ public class OperatorApiMockGenerator {
                     "errorCode", "EXISTING_OPERATOR",
                     "errorMessage", "The new operator already exists in Git"
                 ))
+                .header("test", "addOperator: " + operator.getCode())
                 .build();
         }
 
@@ -45,6 +47,7 @@ public class OperatorApiMockGenerator {
                 "code", operator.getCode(),
                 "status", "CREATED"
             ))
+            .header("test", "addOperator: " + operator.getCode())
             .build();
     }
 
@@ -60,6 +63,7 @@ public class OperatorApiMockGenerator {
 
         return Response.ok()
             .entity(mockIps)
+            .header("test", "getOperatorIpList: " + operatorCode)
             .build();
     }
 
@@ -75,6 +79,7 @@ public class OperatorApiMockGenerator {
 
         return Response.ok()
             .entity(mockOperators)
+            .header("test", "getOperators")
             .build();
     }
 

@@ -29,8 +29,8 @@ public class OperatorApiResource implements OperatorApi {
         }
 
         // Real implementation logic here
-        return Response.ok().header("test", "addIps : " + operatorCode + " IPs: "
-            + addIpsRequest.getNewIps()).build();
+        return Response.ok()
+            .header("test", "addIps : " + operatorCode + " IPs: " + addIpsRequest.getNewIps()).build();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class OperatorApiResource implements OperatorApi {
         }
 
         // Real implementation logic here
-        return Response.ok().header("test", "getOperatorIpList").build();
+        return Response.ok().header("test", "getOperatorIpList: " + operatorCode).build();
     }
 
     @Override
