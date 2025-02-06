@@ -6,6 +6,6 @@ export default {
     outDir: '../dist'
   },
   server: {
-    port: 8080
+    port: 5173
   }
 }
