@@ -1,8 +1,9 @@
-// Import our custom CSS
 import '../scss/styles.scss';
-
-// Import all of Bootstrap's JS
 import * as bootstrap from 'bootstrap';
+
+const BASE_URL = "http://localhost:3000";
+const GET = 'GET';
+const POST = 'POST';
 
 document.addEventListener( 'DOMContentLoaded', function () {
 	const addIpsBtn = document.getElementById( 'add-ips-btn' );
@@ -14,18 +15,10 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	const commentsTextarea = document.getElementById( 'comments' );
 	const whitelistRadios = document.querySelectorAll( 'input[name="whitelistType"]' );
 
-	// Mock data for partners input
-	const partners = [
-		"Partner A",
-		"Partner B",
-		"Partner C",
-		"Partner D",
-		"Partner E",
-		"Partner F"
-	];
+	// Mock data for partners input / TO DO: use API to populate
+	const partners = [ "Partner A", "Partner B", "Partner C", "Partner D", "Partner E", "Partner F" ];
 
 	const disableFields = () => {
-
 		whitelistRadios.forEach( radio => radio.disabled = true );
 		newIpsTextarea.disabled = true;
 		commentsTextarea.disabled = true;
@@ -34,17 +27,15 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	};
 
 	const clearFields = () => {
-
 		newIpsTextarea.value = '';
 		commentsTextarea.value = '';
 		currentIpsTextarea.value = '';
 		whitelistRadios.forEach( radio => radio.checked = false );
 	};
 
-	// Implement cascade enabling fields
 	const enableFields = () => {
 		whitelistRadios.forEach( radio => radio.disabled = false );
-		addPartnerBtn.disabled = true
+		addPartnerBtn.disabled = true;
 	};
 
 	const enableIpsAndComments = () => {
@@ -54,6 +45,28 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 	const enableAddButton = () => {
 		addIpsBtn.disabled = newIpsTextarea.value.trim() === '' || commentsTextarea.value.trim() === '';
+	};
+
+	const sendRequest = async ( method, path, payload ) => {
+		try {
+			const response = await fetch( `${ BASE_URL }${ path }`, {
+				method: method,
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify( payload )
+			} );
+
+			const result = await response.json();
+
+			if ( response.ok ) {
+				alert( `Success: ${ result.message || "Request completed successfully!" }` );
+			} else {
+				alert( `Error: ${ result.error || "Something went wrong!" }` );
+			}
+		} catch ( error ) {
+			alert( `Request failed: ${ error.message }` );
+		}
 	};
 
 	// Initial disable of fields
@@ -134,14 +147,13 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		}
 	} );
 
-	// Validate IP address or IP/CIDR range (e.g., 192.168.1.1/24 or 192.168.1.1/32)
+	// Validate IP address or IP/CIDR range
 	function isValidIp ( ip ) {
 		const ipRegex = /^(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})(\/(3[0-2]|[1-2]?[0-9]))?$/;
 		return ipRegex.test( ip );
 	}
 
-
-	// Handle adding a partner (confirmation required)
+	// Handle adding a partner
 	addPartnerBtn.addEventListener( 'click', function () {
 		const partnerName = partnerInput.value.trim();
 
@@ -150,14 +162,15 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		const confirmAdd = confirm( `Are you sure you want to add "${ partnerName }" as a new partner?` );
 
 		if ( confirmAdd ) {
-			partners.push( partnerName ); // Add to the partner list
-			partnerInput.value = ''; // Clear input field
+			partners.push( partnerName ); // Add to the partner list / TO DO: Remove and refresh from API
+			partnerInput.value = '';
 			addPartnerBtn.disabled = true;
 			console.log( `Partner "${ partnerName }" added.` );
+			sendRequest( POST, '/add-partner', { partnerName } );
 		}
 	} );
 
-	// Handle adding IPs (confirmation required)
+	// Handle adding IPs
 	addIpsBtn.addEventListener( 'click', function () {
 		const newIps = newIpsTextarea.value
 			.split( '\n' )
@@ -192,7 +205,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.id;
 			const comments = commentsTextarea.value.trim();
 
-			// Create the log object
 			const logObject = {
 				partner: selectedPartner,
 				whitelisting: selectedWhitelist,
@@ -202,8 +214,8 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 			addIpsBtn.disabled = true;
 
-			// Print the validated object
-			console.log( logObject );
+			console.log( logObject ); //TO DO: Handle logging optional
+			sendRequest( POST, '/add-ips', logObject );
 		}
 	} );
 } );
