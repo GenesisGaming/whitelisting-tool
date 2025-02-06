@@ -97,16 +97,8 @@ paths:
               example: ["1.2.3.4","1.2.3.5/31"]
         '400':
           description: Invalid input format
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
         '404':
           description: Operator not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
         '500':
           description: Internal server error
     post:
@@ -151,17 +143,9 @@ paths:
         '201':
           description: Successful operation
         '400':
-          description: Invalid input format or the partner already existed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+          description: Invalid input format
         '404':
           description: Operator not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
         '500':
           description: Internal server error
 
