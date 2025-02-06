@@ -2,14 +2,12 @@ package com.genesis.whitelist;
 
 import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
-import static org.hamcrest.CoreMatchers.is;
 
-import io.quarkus.builder.Json;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-class OperatorTest {
+class OperatorApiResourceTest {
 
     @Test
     void testGetOperators() {
