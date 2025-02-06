@@ -17,7 +17,6 @@ public class OperatorApiMockGenerator {
 
     public static Response mockAddIps(String operatorCode, AddIpsRequest addIpsRequest) {
         LOG.info("mockAddIps called for operator: " + operatorCode + " and IPs: " + addIpsRequest);
-
         return Response.ok()
             .entity(Map.of(
                 "whitelistType", addIpsRequest.getWhitelistType(),
@@ -27,6 +26,8 @@ public class OperatorApiMockGenerator {
     }
 
     public static Response mockAddOperator(Operator operator) {
+        LOG.info("mockAddOperator called for operator: " + operator.getCode());
+
         // Check if the operator code is "EXISTING_OPERATOR"
         if ("EXISTING_OPERATOR".equals(operator.getCode())) {
             // Return a 400 Bad Request with the specified error body
@@ -48,6 +49,8 @@ public class OperatorApiMockGenerator {
     }
 
     public static Response mockGetOperatorIpList(String operatorCode, String whitelistType) {
+        LOG.info("mockGetOperatorIpList called for operator: " + operatorCode + " with whitelistType: " + whitelistType);
+
         // Create a mock IP list response
         List<String> mockIps = Arrays.asList(
             "192.168.1.1",
@@ -61,11 +64,13 @@ public class OperatorApiMockGenerator {
     }
 
     public static Response mockGetOperators() {
+        LOG.info("mockGetOperators called");
+
         // Create a mock list of operators
         List<Operator> mockOperators = Arrays.asList(
-            createMockOperator("OP001", "Operator One"),
-            createMockOperator("OP002", "Operator Two"),
-            createMockOperator("OP003", "Operator Three")
+            createMockOperator("OP001"),
+            createMockOperator("OP002"),
+            createMockOperator("OP003")
         );
 
         return Response.ok()
@@ -73,7 +78,7 @@ public class OperatorApiMockGenerator {
             .build();
     }
 
-    private static Operator createMockOperator(String code, String name) {
+    private static Operator createMockOperator(String code) {
         Operator operator = new Operator();
         operator.setCode(code);
         return operator;
