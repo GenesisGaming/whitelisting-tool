@@ -52,7 +52,8 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	// Function to fetch IPs for a specific partner
 	const fetchIpsForPartner = async ( partnerName ) => {
 		try {
-			const ips = await sendRequest( GET, `/operator/${ partnerName }/ip` );
+			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
+			const ips = await sendRequest( GET, `/operator/${ partnerName }/ip?whitelistType=${ selectedWhitelist }` );
 			// Update the currentIpsTextarea with each IP on a new line
 			currentIpsTextarea.value = ips.join( "\n" );
 		} catch ( error ) {
@@ -220,7 +221,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 			newIpsTextarea.focus();
 
 			const selectedPartner = partnerInput.value.trim() || null;
-			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.id;
+			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
 			const comments = commentsTextarea.value.trim();
 
 			const logObject = {
@@ -232,7 +233,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 			addIpsBtn.disabled = true;
 
-			await sendRequest( POST, '/operator', { "code": selectedPartner } );
+			await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
 			await fetchIpsForPartner( selectedPartner );
 		}
 	} );
