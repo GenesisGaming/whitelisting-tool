@@ -120,6 +120,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			listItem.addEventListener( "click", function () {
 				partnerInput.value = partner;
 				dropdown.style.display = "none";
+				disableFields();
 				enableFields();
 				clearFields();
 			} );
