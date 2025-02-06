@@ -21,7 +21,7 @@ class GitClientIT {
 
     @BeforeEach
     public void setup(@TempDir File tempDir) {
-        gitConfig = new TestGitConfig("PatriciuBogatu", "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", "https://github.com/PatriciuBogatu/gitj-poc.git", tempDir.getAbsolutePath()) ;
+        gitConfig = new TestGitConfig("PatriciuBogatu", "", "https://github.com/PatriciuBogatu/gitj-poc.git", tempDir.getAbsolutePath()) ;
         gitClient = new GitClient(gitConfig, "test");
     }
 
