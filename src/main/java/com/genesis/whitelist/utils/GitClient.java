@@ -1,43 +1,41 @@
 package com.genesis.whitelist.utils;
 
+import com.genesis.whitelist.services.configs.GitConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.jgit.api.*;
+import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.File;
+import java.io.IOException;
 
 @ApplicationScoped
-public class Repository {
-    private final String username;
-    private final String token;
-    private final String url;
-    private final File repoPath;
+public class GitClient{
+    private final GitConfig gitConfig;
 
-    public Repository(String username, String password, String url, File repoPath){
-        this.username = username;
-        this.token = password;
-        this.url = url;
-        this.repoPath = repoPath;
-    }
+    public GitClient(GitConfig gitConfig, @ConfigProperty(name = "branch") String branch){
+        this.gitConfig = gitConfig;
+        CredentialsProvider provider = new UsernamePasswordCredentialsProvider(gitConfig.user(), gitConfig.token());
 
-    public void cloneRepository() {
         try {
-            CloneCommand cloneCommand = Git.cloneRepository()
-                    .setURI(url)
-                    .setDirectory(repoPath);
+            Git.cloneRepository()
+                    .setURI(gitConfig.url())
+                    .setDirectory(new File(gitConfig.workingDirectory()))
+                    .setCredentialsProvider(provider)
+                    .setBranch(branch) // throws ERROR if does not exist on remote, should be ok
+                    .call()
+                    .close();
 
-            CredentialsProvider provider = new UsernamePasswordCredentialsProvider(username, token);
-            cloneCommand.setCredentialsProvider(provider);
-            Git git = cloneCommand.call();
-            git.close();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to clone the repo", e);
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
         }
     }
 
+
     public void commitChanges(String message, String authorName, String authorEmail) {
-        try (Git git = Git.open(repoPath)) {
+        try(Git git = Git.open(getRepoPath()))  {
             git.add().addFilepattern(".").call(); // Stage all changes
             git.commit()
                     .setMessage(message)
@@ -48,26 +46,22 @@ public class Repository {
         }
     }
 
-    public void pushChanges(String username, String password) {
-        try (Git git = Git.open(repoPath)) {
+    public void pushChanges() {
+        try (Git git = Git.open(getRepoPath())) {
             PushCommand pushCommand = git.push();
-            if (username != null && password != null) {
-                CredentialsProvider provider = new UsernamePasswordCredentialsProvider(username, password);
-                pushCommand.setCredentialsProvider(provider);
-            }
+            CredentialsProvider provider = new UsernamePasswordCredentialsProvider(gitConfig.user(), gitConfig.token());
+            pushCommand.setCredentialsProvider(provider);
             pushCommand.call();
         } catch (Exception e) {
             throw new RuntimeException("Failed to push changes", e);
         }
     }
 
-    public void pullChanges(String username, String password){
-        try (Git git = Git.open(repoPath)) {
+    public void pullChanges(){
+        try (Git git = Git.open(getRepoPath())) {
             PullCommand pullCommand = git.pull();
-            if (username != null && password != null) {
-                CredentialsProvider provider = new UsernamePasswordCredentialsProvider(username, password);
-                pullCommand.setCredentialsProvider(provider);
-            }
+            CredentialsProvider provider = new UsernamePasswordCredentialsProvider(gitConfig.user(), gitConfig.token());
+            pullCommand.setCredentialsProvider(provider);
             pullCommand.call();
         } catch (Exception e) {
             throw new RuntimeException("Failed to push changes", e);
@@ -75,11 +69,9 @@ public class Repository {
     }
 
     public void checkStatus(String username, String password) {
-        try (Git git = Git.open(repoPath)) {
+        try (Git git = Git.open(getRepoPath())) {
             StatusCommand statusCommand = git.status();
-            if (username != null && password != null) {
-                statusCommand.call();
-            }
+            statusCommand.call();
         } catch (Exception e) {
             throw new RuntimeException("Failed to push changes", e);
         }
@@ -87,7 +79,34 @@ public class Repository {
     }
 
 
-    public File getRepoPath(){
-        return repoPath;
+    public void hardResetBranch(int offset){
+        try (Git git = Git.open(getRepoPath())) {
+        git.reset().setMode(ResetCommand.ResetType.HARD)
+                .setRef("HEAD~" + offset)
+                .call();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to push changes", e);
+        }
     }
+
+
+    public void checkoutBranch(String branchName, boolean create){
+        try (Git git = Git.open(getRepoPath())) {
+            git.checkout()
+                    .setCreateBranch(create)
+                    .setName(branchName)
+                    .call();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public File getRepoPath(){
+        return new File(gitConfig.workingDirectory());
+    }
+
 }
