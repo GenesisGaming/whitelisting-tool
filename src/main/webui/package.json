@@ -6,9 +6,16 @@
   "scripts": {
     "dev": "vite --base=/quinoa",
     "build": "vite build --base=/quinoa",
-    "preview": "vite preview --base=/quinoa"
+    "preview": "vite preview --base=/quinoa",
+    "start": "vite",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
+    "sass": "^1.83.4",
     "vite": "^5.3.6"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.3"
   }
 }
