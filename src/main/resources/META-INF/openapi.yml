@@ -9,13 +9,14 @@ info:
   license:
     name: Expenti
     url: https://www.expenti.com/
-  version: "0.1"
-#  COMMENTED TO DEFAULT TO http://localhost:8080 for local dev
+  version: "0.3"
 #servers:
 #  - url: https://whitelisting-tool/api/v1
 tags:
   - name: Operator
     description: Manage operators' whitelisted IPs
+security:
+  - BasicAuth: []
 paths:
   /operator:
     get:
@@ -26,7 +27,7 @@ paths:
       operationId: getOperators
       responses:
         '200':
-          description: OK
+          description: successful operation
           content:
             application/json:
               schema:
@@ -35,9 +36,6 @@ paths:
                   $ref: '#/components/schemas/Operator'
         '500':
           description: Internal server error
-      security:
-        - whitelist_auth:
-            - write:operators
     post:
       tags:
         - Operator
@@ -52,17 +50,16 @@ paths:
               $ref: '#/components/schemas/Operator'
         required: true
       responses:
-        '200':
-          description: Successful operation
         '201':
           description: Successful operation
         '400':
           description: Invalid input format or the partner already existed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
         '500':
           description: Internal server error
-      security:
-        - whitelist_auth:
-            - write:operators
   /operator/{operatorCode}/ip:
     get:
       tags:
@@ -77,28 +74,46 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 30
+            maxLength: 50
+            example: Operator_1
+        - name: whitelistType
+          in: query
+          description: Type of whitelist to retrieve
+          required: true
+          schema:
+            type: string
+            enum:
+              - API
+              - BACK_OFFICE
       responses:
         '200':
-          description: OK
+          description: successful operation
           content:
             application/json:
               schema:
                 type: array
                 items:
                   type: string
+              example: ["1.2.3.4","1.2.3.5/31"]
+        '400':
+          description: Invalid input format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
         '404':
           description: Operator not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
         '500':
           description: Internal server error
-      security:
-        - whitelist_auth:
-            - write:operators
     post:
       tags:
         - Operator
       summary: Add new IPs to the partner's list
-      description: Add new IPs to the partner's list
+      description: Add new IPs to the partner's list. Also accepts CIDR blocks.
       operationId: addIps
       parameters:
         - name: operatorCode
@@ -107,28 +122,48 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 30
+            maxLength: 50
+            example: Operator_1
       requestBody:
-        description: IP array
+        description: IP or CIDR block array
         content:
           application/json:
             schema:
-              type: array
-              items:
-                type: string
-                minLength: 1
-                maxLength: 45
+              type: object
+              properties:
+                whitelistType:
+                  type: string
+                  enum:
+                    - API
+                    - BACK_OFFICE
+                newIps:
+                  type: array
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                    pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)(?:\/(?:3[0-2]|[12]?[0-9]))?$
+            example:
+              whitelistType: API
+              newIps: ["1.2.3.4","1.2.3.5/31"]
         required: true
       responses:
-        '200':
-          description: OK
+        '201':
+          description: Successful operation
         '400':
           description: Invalid input format or the partner already existed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Operator not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
         '500':
           description: Internal server error
-      security:
-        - whitelist_auth:
-            - write:operators
 
 components:
   schemas:
@@ -141,4 +176,23 @@ components:
           type: string
           description: Operator code
           minLength: 1
-          maxLength: 30
+          maxLength: 50
+      example:
+        code: Operator_1
+    ApiErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+      example:
+        errorCode: EXISTING_OPERATOR
+        errorMessage: The new operator already exists in Git
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic

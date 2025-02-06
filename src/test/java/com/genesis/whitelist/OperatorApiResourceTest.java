@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 class OperatorApiResourceTest {
 
+    // TODO: Add response body validation to tests
+    // TODO: Add red path scenarios 400, etc
+
     @Test
     void testGetOperators() {
         given()
@@ -32,7 +35,7 @@ class OperatorApiResourceTest {
             .when()
             .post("/operator")
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .header("test", "addOperator: xxx");
     }
 
@@ -48,9 +51,13 @@ class OperatorApiResourceTest {
     @Test
     void testAddIps() {
         String jsonBody = """
-            [
-              "zzz"
-            ]
+            {
+              "whitelistType": "API",
+              "newIps": [
+                "1.2.3.4",
+                "1.2.3.5/31"
+              ]
+            }
             """;
 
         given()
@@ -58,9 +65,10 @@ class OperatorApiResourceTest {
             .body(jsonBody)
             .when()
             .post("/operator/xxx/ip")
+
             .then()
             .statusCode(200)
-            .header("test", "addIps: xxx");
+            .header("test", "addIps : xxx IPs: [1.2.3.4, 1.2.3.5/31]");
     }
 
 }
