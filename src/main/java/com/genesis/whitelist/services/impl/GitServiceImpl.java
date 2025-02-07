@@ -43,7 +43,6 @@ public class GitServiceImpl implements GitService {
             String line;
             while ((line = reader.readLine()) != null) {
                 if(line.contains("allow")){
-                    System.out.println("ATTACKS " + line);
                     String ip = line.split(" {4}")[1].replace(";", "");
                     ips.add(ip);
                 }
