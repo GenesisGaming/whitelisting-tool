@@ -2,8 +2,8 @@ package com.genesis.whitelist;
 
 import static io.restassured.RestAssured.given;
 
-import com.genesis.whitelist.model.AddIpsRequest;
 import com.genesis.whitelist.model.Operator;
+import com.genesis.whitelist.model.UpdateIpsRequest;
 import io.restassured.http.ContentType;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class OperatorApiResourceTest {
     // TODO: validate also the response body of error messages
 
+
     @Test
     void testGetOperators() {
         Response response = given()
@@ -34,15 +35,47 @@ class OperatorApiResourceTest {
 
 
 
-// A big journey test that validates adding a new partner, adding the IPs and then retrieving them.
+// A big journey test that validates adding a new partner, adding the IPs, removing a couple and then validating the final list.
     @Test
-    void testAddIpsAndValidate() {
+    void testUpdateIpsAndValidate() {
         Operator toAdd = new Operator("IT" + System.currentTimeMillis());
-        AddIpsRequest request = new AddIpsRequest();
-        request.setWhitelistType(AddIpsRequest.WhitelistTypeEnum.API);
-        // adding 2 IPs
-        request.setNewIps(List.of(
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(toAdd)
+                .when()
+                .post("/operator")
+                .then()
+                .statusCode(201);
+
+        // add IPs request
+        UpdateIpsRequest addIpsRequest = new UpdateIpsRequest();
+        addIpsRequest.setWhitelistType(UpdateIpsRequest.WhitelistTypeEnum.API);
+        addIpsRequest.setUpdateType(UpdateIpsRequest.UpdateTypeEnum.ADDITION);
+        // adding 4 IPs with deduplication
+        addIpsRequest.setIps(List.of(
                 "1.2.3.5",
+                "1.2.3.5",
+                "1.5.5.9",
+                "1.5.5.9",
+                "4.4.4.4",
+                "1.2.3.6/31"
+        ));
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(addIpsRequest)
+                .when()
+                .patch("/operator/" +  toAdd.getCode() +"/ip")
+                .then()
+                .statusCode(200);
+
+        // remove IPs request
+        UpdateIpsRequest removeIpsRequest = new UpdateIpsRequest();
+        removeIpsRequest.setWhitelistType(UpdateIpsRequest.WhitelistTypeEnum.API);
+        removeIpsRequest.setUpdateType(UpdateIpsRequest.UpdateTypeEnum.REMOVAL);
+        // removing 2 IPs
+        removeIpsRequest.setIps(List.of(
                 "1.2.3.5",
                 "1.2.3.5",
                 "1.2.3.6/31"
@@ -50,29 +83,23 @@ class OperatorApiResourceTest {
 
         given()
                 .contentType(ContentType.JSON)
-                .body(toAdd)
+                .body(removeIpsRequest)
                 .when()
-                .post("/operator");
-
-        given()
-                .contentType(ContentType.JSON)
-                .body(request)
-                .when()
-                .post("/operator/" +  toAdd.getCode() +"/ip")
+                .patch("/operator/" +  toAdd.getCode() +"/ip")
                 .then()
                 .statusCode(200);
 
-        int countIps = given()
+        // checking the IPs list after addition and removal
+        ArrayList updatedIps = given()
                 .when().get("/operator/" +  toAdd.getCode() +"/ip")
                 .then()
                 .extract()
                 .response()
                 .body()
-                .as(ArrayList.class)
-                .size();
+                .as(ArrayList.class);
 
-
-        assertEquals(2, countIps);
+        assertTrue(updatedIps.containsAll(List.of("1.5.5.9", "4.4.4.4")));
+        assertEquals(2, updatedIps.size());
     }
 
 
@@ -109,9 +136,10 @@ class OperatorApiResourceTest {
 
     @Test
     void testAddIpsFailsForNonExistingPartner() {
-        AddIpsRequest request = new AddIpsRequest();
-        request.setWhitelistType(AddIpsRequest.WhitelistTypeEnum.API);
-        request.setNewIps(List.of(
+        UpdateIpsRequest request = new UpdateIpsRequest();
+        request.setWhitelistType(UpdateIpsRequest.WhitelistTypeEnum.API);
+        request.setUpdateType(UpdateIpsRequest.UpdateTypeEnum.ADDITION);
+        request.setIps(List.of(
                 "1.2.3.4",
                 "1.2.3.4",
                 "1.2.3.4",
@@ -123,7 +151,33 @@ class OperatorApiResourceTest {
                 .contentType(ContentType.JSON)
                 .body(request)
                 .when()
-                .post("/operator/nonexisting/ip")
+                .patch("/operator/nonexisting/ip")
+                .then()
+                .statusCode(404)
+                .extract().response();
+
+        // to validate error message
+    }
+
+
+    @Test
+    void testRemoveIpsFailsForNonExistingPartner() {
+        UpdateIpsRequest request = new UpdateIpsRequest();
+        request.setWhitelistType(UpdateIpsRequest.WhitelistTypeEnum.API);
+        request.setUpdateType(UpdateIpsRequest.UpdateTypeEnum.ADDITION);
+        request.setIps(List.of(
+                "1.2.3.4",
+                "1.2.3.4",
+                "1.2.3.4",
+                "1.2.3.5/31"
+        ));
+
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when()
+                .patch("/operator/nonexisting/ip")
                 .then()
                 .statusCode(404)
                 .extract().response();

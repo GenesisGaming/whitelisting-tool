@@ -2,8 +2,8 @@ package com.genesis.whitelist.services.impl;
 
 import com.genesis.whitelist.exceptions.OperatorAlreadyExistsException;
 import com.genesis.whitelist.exceptions.OperatorMissingException;
-import com.genesis.whitelist.model.AddIpsRequest;
 import com.genesis.whitelist.model.Operator;
+import com.genesis.whitelist.model.UpdateIpsRequest;
 import com.genesis.whitelist.services.GitService;
 import com.genesis.whitelist.utils.GitClient;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -69,12 +69,13 @@ public class GitServiceImpl implements GitService {
     }
 
     @Override
-    public void addNewIPs(String operatorName, AddIpsRequest request) {
+    public void addNewIPs(String operatorName, UpdateIpsRequest request) {
         var currentIPs = getOperatorIPs(operatorName);
+        var ipsToAdd = request.getIps();
         File operatorFile = getOperatorFile(operatorName).get();
 
-        request.getNewIps().forEach(ip -> {
-            try(BufferedWriter writer = new BufferedWriter(new FileWriter(operatorFile, true))) {
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(operatorFile, true))) {
+            for(var ip: ipsToAdd){
                 if(!currentIPs.contains(ip)){
                     writer.append(template.replace("[IP]", ip))
                             .append("\n");
@@ -82,13 +83,32 @@ public class GitServiceImpl implements GitService {
                     currentIPs.add(ip);
                 }
             }
-            catch (IOException e) {
-                    LOG.error("Couldn't write to file: {}", e);
-            }
-        });
+        }
+        catch (IOException e) {
+            LOG.error("Couldn't write to file: {}", e);
+        }
 
         gitClient.commitChanges("Adding new IPs for " + operatorName, "Backendapp", "backend@genesis.com");
         gitClient.pushChanges();
+    }
+
+
+    @Override
+    public void removeIPs(String operatorName, UpdateIpsRequest request){
+        var currentIPs = getOperatorIPs(operatorName);
+        File operatorFile = getOperatorFile(operatorName).get();
+
+        request.getIps().forEach(currentIPs::remove);
+
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(operatorFile, false))) {
+            for(var ip: currentIPs){
+                writer.append(template.replace("[IP]", ip))
+                        .append("\n");
+            }
+
+        } catch (IOException e) {
+            LOG.error("Could't write to file: {}", e);
+        }
     }
 
 
@@ -126,4 +146,5 @@ public class GitServiceImpl implements GitService {
         return Arrays.stream(partnersDir.listFiles())
                 .anyMatch(f -> f.getName().equals(operatorName + extension));
     }
+
 }
