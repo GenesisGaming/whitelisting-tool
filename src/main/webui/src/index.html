@@ -21,7 +21,8 @@
 					<div class="flex-grow-1 me-3">
 						<label for="partner" class="form-label">Select an Operator:</label>
 						<div class="dropdown-container">
-							<input type="text" id="partner" class="form-control" placeholder="Select or type an Operator">
+							<input type="text" id="partner" class="form-control"
+								placeholder="Select or type an Operator">
 							<ul id="partner-dropdown" class="dropdown-list"></ul>
 						</div>
 					</div>
@@ -34,28 +35,46 @@
 					<div>
 						<label class="form-label">Select Whitelist Type:</label>
 						<div class="form-check">
-							<input class="form-check-input" type="radio" name="whitelistType" id="bo" value="BACK_OFFICE" disabled>
+							<input class="form-check-input" type="radio" name="whitelistType" id="bo"
+								value="BACK_OFFICE" disabled>
 							<label class="form-check-label" for="bo">BackOffice</label>
 						</div>
 						<div class="form-check">
-							<input class="form-check-input" type="radio" name="whitelistType" id="api" value="API" disabled>
+							<input class="form-check-input" type="radio" name="whitelistType" id="api" value="API"
+								disabled>
 							<label class="form-check-label" for="api">API</label>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<!-- New IPs and Current IPs Section -->
+			<!-- IPs Section -->
 			<div class="mb-4">
-				<h4>IPs</h4>
+				<h4>Manage IPs</h4>
+
+				<!-- Radio Buttons for Add/Remove IPs -->
+				<div class="mb-2">
+					<div class="form-check form-check-inline">
+						<input class="form-check-input" type="radio" name="ipAction" id="add-ips-option" value="add"
+							checked>
+						<label class="form-check-label" for="add-ips-option">Add IPs</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input class="form-check-input" type="radio" name="ipAction" id="remove-ips-option"
+							value="remove">
+						<label class="form-check-label" for="remove-ips-option">Remove IPs</label>
+					</div>
+				</div>
+
 				<div class="d-flex align-items-center gap-3">
 					<div class="flex-grow-1">
-						<label for="new-ips" class="form-label">New IPs:</label>
-						<textarea id="new-ips" class="form-control" rows="3" placeholder="Enter new IP addresses"
+						<label id="new-ips-label" for="new-ips" class="form-label">New IPs:</label>
+						<textarea id="new-ips" class="form-control" rows="3" placeholder="Enter IP addresses"
 							disabled></textarea>
 					</div>
 
-					<button id="add-ips-btn" class="btn btn-success" disabled>Add >></button>
+					<!-- Dynamic Button (Changes based on radio selection) -->
+					<button id="ip-action-btn" class="btn btn-success" disabled>Add >></button>
 
 					<div class="flex-grow-1">
 						<label for="current-ips" class="form-label">Current IPs</label>
@@ -73,6 +92,7 @@
 						disabled></textarea>
 				</div>
 			</div>
+
 		</div>
 	</div>
 </body>

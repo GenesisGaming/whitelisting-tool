@@ -6,7 +6,7 @@ const GET = 'GET';
 const POST = 'POST';
 
 document.addEventListener( 'DOMContentLoaded', async function () {
-	const addIpsBtn = document.getElementById( 'add-ips-btn' );
+	const ipActionBtn = document.getElementById( 'ip-action-btn' );
 	const addPartnerBtn = document.getElementById( 'add-partner-btn' );
 	const newIpsTextarea = document.getElementById( 'new-ips' );
 	const currentIpsTextarea = document.getElementById( 'current-ips' );
@@ -14,6 +14,30 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	const dropdown = document.getElementById( 'partner-dropdown' );
 	const commentsTextarea = document.getElementById( 'comments' );
 	const whitelistRadios = document.querySelectorAll( 'input[name="whitelistType"]' );
+	const addIpsOption = document.getElementById( 'add-ips-option' );
+	const removeIpsOption = document.getElementById( 'remove-ips-option' );
+	const newIpsLabel = document.getElementById( 'new-ips-label' )
+
+	// Function to toggle the button text and styling
+	const updateIpActionButton = () => {
+		if ( addIpsOption.checked ) {
+			ipActionBtn.textContent = "Add >>";
+			ipActionBtn.classList.remove( "btn-danger" );
+			ipActionBtn.classList.add( "btn-success" );
+			newIpsLabel.innerHTML = "IPs to ADD"
+		} else {
+			ipActionBtn.textContent = "REMOVE";
+			ipActionBtn.classList.remove( "btn-success" );
+			ipActionBtn.classList.add( "btn-danger" );
+			newIpsLabel.innerHTML = "IPs to REMOVE"
+		}
+	};
+
+	addIpsOption.addEventListener( "change", updateIpActionButton );
+	removeIpsOption.addEventListener( "change", updateIpActionButton );
+
+	// Initialize correct button state
+	updateIpActionButton();
 
 	let partners = [];
 
@@ -68,7 +92,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 		whitelistRadios.forEach( radio => radio.disabled = true );
 		newIpsTextarea.disabled = true;
 		commentsTextarea.disabled = true;
-		addIpsBtn.disabled = true;
+		ipActionBtn.disabled = true;
 		addPartnerBtn.disabled = true;
 	};
 
@@ -90,7 +114,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	};
 
 	const enableAddButton = () => {
-		addIpsBtn.disabled = newIpsTextarea.value.trim() === '' || commentsTextarea.value.trim() === '';
+		ipActionBtn.disabled = newIpsTextarea.value.trim() === '' || commentsTextarea.value.trim() === '';
 	};
 
 	disableFields();
@@ -173,7 +197,6 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 			dropdown.style.display = "none";
 		}
 	} );
-
 	// Validate IP address or IP/CIDR range
 	function isValidIp ( ip ) {
 		const ipRegex = /^(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})(\/(3[0-2]|[1-2]?[0-9]))?$/;
@@ -193,7 +216,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	} );
 
 	// Handle adding IPs
-	addIpsBtn.addEventListener( 'click', async function () {
+	ipActionBtn.addEventListener( 'click', async function () {
 		const newIps = newIpsTextarea.value
 			.split( '\n' )
 			.map( ip => ip.trim() )
@@ -231,7 +254,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 				comments: comments
 			};
 
-			addIpsBtn.disabled = true;
+			ipActionBtn.disabled = true;
 
 			await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
 			await fetchIpsForPartner( selectedPartner );
