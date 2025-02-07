@@ -1,7 +1,10 @@
 package com.genesis.whitelist;
 
+import com.genesis.whitelist.exceptions.OperatorAlreadyExistsException;
+import com.genesis.whitelist.exceptions.OperatorMissingException;
 import com.genesis.whitelist.model.AddIpsRequest;
 import com.genesis.whitelist.model.Operator;
+import com.genesis.whitelist.services.GitService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
@@ -15,9 +18,14 @@ public class OperatorApiResource implements OperatorApi {
 
     @Inject
     OperatorApiMockGenerator mockGenerator;
-
+    GitService gitService;
     @ConfigProperty(name = "operator-api.use-mock", defaultValue = "false")
     boolean useMock;
+
+
+    public OperatorApiResource(GitService gitService){
+        this.gitService = gitService;
+    }
 
     @Override
     public Response addIps(String operatorCode, AddIpsRequest addIpsRequest) {
@@ -27,10 +35,12 @@ public class OperatorApiResource implements OperatorApi {
             LOG.info("Using mock response for addIps");
             return mockGenerator.mockAddIps(operatorCode, addIpsRequest);
         }
-
-        // Real implementation logic here
-        return Response.ok()
-            .header("test", "addIps : " + operatorCode + " IPs: " + addIpsRequest.getNewIps()).build();
+        try {
+            gitService.addNewIPs(operatorCode, addIpsRequest);
+            return Response.ok().build();
+        }catch (OperatorMissingException e){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
     }
 
     @Override
@@ -43,7 +53,12 @@ public class OperatorApiResource implements OperatorApi {
         }
 
         // Real implementation logic here
-        return Response.ok().header("test", "addOperator: " + operator.getCode()).build();
+        try {
+            gitService.addNewOperator(operator);
+            return Response.status(Response.Status.CREATED).build();
+        }catch(OperatorAlreadyExistsException e){
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 
     @Override
@@ -55,8 +70,11 @@ public class OperatorApiResource implements OperatorApi {
             return mockGenerator.mockGetOperatorIpList(operatorCode, whitelistType);
         }
 
-        // Real implementation logic here
-        return Response.ok().header("test", "getOperatorIpList: " + operatorCode).build();
+        try {
+            return Response.ok(gitService.getOperatorIPs(operatorCode)).build();
+        }catch(OperatorMissingException e){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
     }
 
     @Override
@@ -69,6 +87,6 @@ public class OperatorApiResource implements OperatorApi {
         }
 
         // Real implementation logic here
-        return Response.ok().header("test", "getOperators").build();
+        return Response.ok(gitService.getAllOperators()).build();
     }
 }

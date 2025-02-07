@@ -21,18 +21,18 @@ class GitClientIT {
 
     @BeforeEach
     public void setup(@TempDir File tempDir) {
-        gitConfig = new TestGitConfig("PatriciuBogatu", "", "https://github.com/PatriciuBogatu/gitj-poc.git", tempDir.getAbsolutePath()) ;
-        gitClient = new GitClient(gitConfig, "test");
+        gitConfig = new TestGitConfig("PatriciuBogatu", "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", "https://github.com/PatriciuBogatu/gitj-poc.git", "test", tempDir.getAbsolutePath()) ;
+        gitClient = new GitClient(gitConfig);
     }
 
 
     @Test
     void pushNewBranchWithNewFile() throws IOException {
-        String newFileName = "backend2" + new Random(100).nextInt() + ".txt";
+        String newFileName = "backend" + System.currentTimeMillis() + ".txt";
         String newFileContent = "Hello World!";
 
         Files.write(gitClient.getRepoPath().toPath().resolve(newFileName), newFileContent.getBytes());
-        gitClient.commitChanges("Test commit", "Test User", "test@example.com");
+        gitClient.commitChanges("Test commit" + System.currentTimeMillis(), "Test User", "test@example.com");
 
         gitClient.pushChanges();
         // the branch appears
@@ -54,12 +54,14 @@ class GitClientIT {
         private final String user;
         private final String token;
         private final String url;
+        private final String branch;
         private final String workingDirectory;
 
-        TestGitConfig(String user, String token, String url, String workingDirectory) {
+        TestGitConfig(String user, String token, String url, String branch, String workingDirectory) {
             this.user = user;
             this.token = token;
             this.url = url;
+            this.branch = branch;
             this.workingDirectory = workingDirectory;
         }
 
@@ -76,6 +78,11 @@ class GitClientIT {
         @Override
         public String url() {
             return url;
+        }
+
+        @Override
+        public String branch() {
+            return branch;
         }
 
         @Override

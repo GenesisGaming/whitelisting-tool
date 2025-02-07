@@ -1,12 +1,14 @@
 package com.genesis.whitelist.utils;
 
 import com.genesis.whitelist.services.configs.GitConfig;
+import com.genesis.whitelist.services.impl.GitServiceImpl;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,9 +16,14 @@ import java.io.IOException;
 @ApplicationScoped
 public class GitClient{
     private final GitConfig gitConfig;
+    private static final Logger LOG = Logger.getLogger(GitClient.class);
 
-    public GitClient(GitConfig gitConfig, @ConfigProperty(name = "branch") String branch){
+    public GitClient(GitConfig gitConfig){
         this.gitConfig = gitConfig;
+        File workingDirectory = new File(gitConfig.workingDirectory());
+
+        if(workingDirectory.exists() && workingDirectory.listFiles().length > 0) return;
+
         CredentialsProvider provider = new UsernamePasswordCredentialsProvider(gitConfig.user(), gitConfig.token());
 
         try {
@@ -24,13 +31,15 @@ public class GitClient{
                     .setURI(gitConfig.url())
                     .setDirectory(new File(gitConfig.workingDirectory()))
                     .setCredentialsProvider(provider)
-                    .setBranch(branch) // throws ERROR if does not exist on remote, should be ok
+                    .setBranch(gitConfig.branch()) // throws ERROR if does not exist on remote, should be ok
                     .call()
                     .close();
 
         } catch (GitAPIException e) {
             throw new RuntimeException(e);
         }
+
+        LOG.info("Initialized git client");
     }
 
 
@@ -44,7 +53,10 @@ public class GitClient{
         } catch (Exception e) {
             throw new RuntimeException("Failed to commit changes", e);
         }
+
+        LOG.info("Changes commited");
     }
+
 
     public void pushChanges() {
         try (Git git = Git.open(getRepoPath())) {
@@ -55,7 +67,10 @@ public class GitClient{
         } catch (Exception e) {
             throw new RuntimeException("Failed to push changes", e);
         }
+
+        LOG.info("Changes pushed");
     }
+
 
     public void pullChanges(){
         try (Git git = Git.open(getRepoPath())) {
@@ -66,7 +81,10 @@ public class GitClient{
         } catch (Exception e) {
             throw new RuntimeException("Failed to push changes", e);
         }
+
+        LOG.info("Changes pulled");
     }
+
 
     public void checkStatus(String username, String password) {
         try (Git git = Git.open(getRepoPath())) {
@@ -108,5 +126,4 @@ public class GitClient{
     public File getRepoPath(){
         return new File(gitConfig.workingDirectory());
     }
-
 }
