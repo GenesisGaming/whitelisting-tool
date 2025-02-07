@@ -2,6 +2,8 @@ package com.genesis.whitelist.services.impl;
 
 import com.genesis.whitelist.exceptions.OperatorAlreadyExistsException;
 import com.genesis.whitelist.exceptions.OperatorMissingException;
+import com.genesis.whitelist.model.AddIpsRequest;
+import com.genesis.whitelist.model.Operator;
 import com.genesis.whitelist.services.GitService;
 import com.genesis.whitelist.utils.GitClient;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -15,15 +17,16 @@ import java.util.*;
 
 @ApplicationScoped
 public class GitServiceImpl implements GitService {
-
     private GitClient gitClient;
-    private final String prefix = "allow ";
+    private File partnersDir;
+    private final String template = "allow    [IP];";
     private final String extension = ".conf";
     private static final Logger LOG = Logger.getLogger(GitServiceImpl.class);
 
     @Inject
     public GitServiceImpl(GitClient gitClient){
         this.gitClient = gitClient;
+        this.partnersDir = new File(gitClient.getRepoPath(), "customers");
     }
 
     public GitServiceImpl(){
@@ -40,64 +43,78 @@ public class GitServiceImpl implements GitService {
             String line;
             while ((line = reader.readLine()) != null) {
                 if(line.contains("allow")){
-                    ips.add(line.split(" ")[1]);
+                    System.out.println("ATTACKS " + line);
+                    String ip = line.split(" {4}")[1].replace(";", "");
+                    ips.add(ip);
                 }
             }
         } catch (IOException e) {
             LOG.error("Couldn't read the file: {}", e);
         }
 
+        LOG.info("Read a total of " +  ips.size());
+
         return ips;
     }
 
     @Override
-    public List<String> getAllOperators() {
+    public List<Operator> getAllOperators() {
+        LOG.info("Pulling changes");
         gitClient.pullChanges();
-        return Arrays.stream(gitClient.getRepoPath().listFiles())
-                .map(f -> f.getName().replace(".conf", ""))
+        List<Operator> operators = Arrays.stream(partnersDir.listFiles())
+                .map(f -> new Operator(f.getName().replace(".conf", "")))
                 .toList();
+
+        LOG.info("Total operators fetched - " + operators.size());
+        return operators;
     }
 
     @Override
-    public void addNewIPs(String operatorName, List<String> ips) {
-        gitClient.pullChanges();
-        File operatorFile = getOperatorFile(operatorName).orElseThrow(() -> new OperatorMissingException(operatorName));
+    public void addNewIPs(String operatorName, AddIpsRequest request) {
+        var currentIPs = getOperatorIPs(operatorName);
+        File operatorFile = getOperatorFile(operatorName).get();
 
-        ips.forEach(ip -> {
+        request.getNewIps().forEach(ip -> {
             try(BufferedWriter writer = new BufferedWriter(new FileWriter(operatorFile, true))) {
-                writer.append(prefix)
-                        .append(ip)
-                        .append("\n");
+                if(!currentIPs.contains(ip)){
+                    writer.append(template.replace("[IP]", ip))
+                            .append("\n");
+
+                    currentIPs.add(ip);
+                }
             }
             catch (IOException e) {
                     LOG.error("Couldn't write to file: {}", e);
-                }
+            }
         });
-        }
+
+        gitClient.commitChanges("Adding new IPs for " + operatorName, "Backendapp", "backend@genesis.com");
+        gitClient.pushChanges();
+    }
 
 
     @Override
-    public void addNewOperator(String operatorName) {
+    public void addNewOperator(Operator operator) {
         gitClient.pullChanges();
         try {
+            String operatorName = operator.getCode();
             if (operatorExists(operatorName)) {
                 throw new OperatorAlreadyExistsException(operatorName);
             }
 
-            Files.createFile(gitClient.getRepoPath().toPath().resolve(operatorName + ".conf"));
+            Files.createFile(partnersDir.toPath().resolve(operatorName + ".conf"));
         } catch (IOException e) {
             LOG.error("Couldn't write to file: {}", e);
         }
+
+        gitClient.commitChanges("Adding operator " + operator.getCode(), "Backendapp", "backend@genesis.com");
+        gitClient.pushChanges();
     }
 
 
     private Optional<File> getOperatorFile(String operatorName){
-        File repoDir = gitClient.getRepoPath();
-
-        var files = repoDir.listFiles();
         File toRead = null;
-
-        for(var file : files){
+        for(var file : partnersDir.listFiles()){
             if(file.getName().equals(operatorName + extension)){
                 toRead = file;
             }
@@ -107,7 +124,7 @@ public class GitServiceImpl implements GitService {
     }
 
     private boolean operatorExists(String operatorName){
-        return Arrays.stream(gitClient.getRepoPath().listFiles())
+        return Arrays.stream(partnersDir.listFiles())
                 .anyMatch(f -> f.getName().equals(operatorName + extension));
     }
 }

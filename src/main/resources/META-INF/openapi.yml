@@ -176,6 +176,29 @@ components:
       example:
         errorCode: EXISTING_OPERATOR
         errorMessage: The new operator already exists in Git
+    AddIpsRequest:
+      type: object
+      required:
+        - whitelistType
+        - newIps
+      properties:
+        whitelistType:
+          type: string
+          enum:
+            - API
+            - BACK_OFFICE
+          description: Type of whitelist to update
+        newIps:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+            pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)(?:\/(?:3[0-2]|[12]?[0-9]))?$
+          description: List of IPs/CIDR blocks to add
+      example:
+        whitelistType: API
+        newIps: [ "1.2.3.4", "1.2.3.5/31" ]
   securitySchemes:
     BasicAuth:
       type: http

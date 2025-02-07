@@ -9,5 +9,6 @@ public interface GitConfig {
     String user();
     String token();
     String url();
+    String branch();
     String workingDirectory();
 }
