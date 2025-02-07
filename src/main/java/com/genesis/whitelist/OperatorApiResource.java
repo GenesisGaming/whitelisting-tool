@@ -15,25 +15,13 @@ import org.jboss.logging.Logger;
 @Path("/operator")
 public class OperatorApiResource implements OperatorApi {
 
-    @ConfigProperty(name = "quarkus.http.cors.origins")
-    String corsOrigin;
-
-    @ConfigProperty(name = "quarkus.http.cors.methods")
-    String corsMethods;
-
-    @ConfigProperty(name = "quarkus.http.cors.headers")
-    String corsHeaders;
-
-    @ConfigProperty(name = "quarkus.http.cors.access-control-max-age")
-    String corsMaxAge;
-
-    @ConfigProperty(name = "quarkus.http.cors.access-control-allow-credentials")
-    boolean corsAllowCredentials;
-
     private static final Logger LOG = Logger.getLogger(OperatorApiResource.class);
 
     @Inject
     OperatorApiMockGenerator mockGenerator;
+
+    @Inject
+    com.genesis.whitelist.CorsConfig corsConfig;
 
     @ConfigProperty(name = "operator-api.use-mock", defaultValue = "false")
     boolean useMock;
@@ -108,14 +96,13 @@ public class OperatorApiResource implements OperatorApi {
             .build());
     }
 
-    // Helper method to add CORS headers to responses
     private Response prepareCorsResponse(Response originalResponse) {
         return Response.fromResponse(originalResponse)
-            .header("Access-Control-Allow-Origin", corsOrigin)
-            .header("Access-Control-Allow-Methods", corsMethods)
-            .header("Access-Control-Allow-Headers", corsHeaders)
-            .header("Access-Control-Max-Age", corsMaxAge)
-            .header("Access-Control-Allow-Credentials", corsAllowCredentials)
+            .header("Access-Control-Allow-Origin", corsConfig.getOrigins())
+            .header("Access-Control-Allow-Methods", corsConfig.getMethods())
+            .header("Access-Control-Allow-Headers", corsConfig.getHeaders())
+            .header("Access-Control-Max-Age", corsConfig.getMaxAge())
+            .header("Access-Control-Allow-Credentials", corsConfig.isAllowCredentials())
             .build();
     }
 
