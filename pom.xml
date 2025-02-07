@@ -6,6 +6,8 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
+        <project.version>1.0-SNAPSHOT</project.version>
+        <container.image.name>${artifactId}</container.image.name>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -126,6 +128,12 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>${quarkus.platform.group-id}</groupId>
@@ -197,7 +205,10 @@
                             </typeMappings>
                             <library>quarkus</library>
                             <generateSupportingFiles>false</generateSupportingFiles>
-                            <additionalProperties>useSwaggerAnnotations=true,supportAsync=false
+                            <additionalProperties>
+                                <additionalProperty>useSwaggerAnnotations=true</additionalProperty>
+                                <additionalProperty>supportAsync=false</additionalProperty>
+                                <additionalProperty>supportCORS=true</additionalProperty>
                             </additionalProperties>
                             <configOptions>
                                 <useTags>true</useTags>
