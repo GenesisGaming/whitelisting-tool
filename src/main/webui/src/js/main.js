@@ -38,14 +38,14 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 		}
 	};
 
-	// Function to fetch partners from API
-	// Function to fetch partners using sendRequest()
+	// Function to fetch operators from API
+	// Function to fetch operators using sendRequest()
 	const fetchPartners = async () => {
 		try {
 			const partnersData = await sendRequest( GET, '/operator' );
 			partners = partnersData.map( partner => partner.code ); // Extract names
 		} catch ( error ) {
-			console.error( "Failed to fetch partners:", error );
+			console.error( "Failed to fetch operators:", error );
 		}
 	};
 
@@ -95,7 +95,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 	disableFields();
 
-	// Partner input event listener
+	// Operator input event listener
 	partnerInput.addEventListener( 'input', function () {
 		const query = partnerInput.value.trim().toLowerCase();
 		const isPartnerValid = partners.some( partner => partner.toLowerCase() === query );
@@ -185,7 +185,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 		const partnerName = partnerInput.value.trim();
 		if ( partnerName === '' ) return;
 
-		const confirmAdd = confirm( `Are you sure you want to add "${ partnerName }" as a new partner?` );
+		const confirmAdd = confirm( `Are you sure you want to add "${ partnerName }" as a new operator?` );
 		if ( confirmAdd ) {
 			await sendRequest( POST, '/operator', { "code": partnerName } );
 			await fetchPartners(); // Refresh partners list
