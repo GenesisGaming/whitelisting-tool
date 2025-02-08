@@ -109,6 +109,9 @@ public class GitServiceImpl implements GitService {
         } catch (IOException e) {
             LOG.error("Could't write to file: {}", e);
         }
+
+        gitClient.commitChanges("Removing IPs for " + operatorName, "Backendapp", "backend@genesis.com");
+        gitClient.pushChanges();
     }
 
 
