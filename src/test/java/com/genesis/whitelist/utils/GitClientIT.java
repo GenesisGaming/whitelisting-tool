@@ -1,7 +1,7 @@
 package com.genesis.whitelist.utils;
 
 
-import com.genesis.whitelist.services.configs.GitConfig;
+import com.genesis.whitelist.configs.GitConfig;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,9 +11,9 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Random;
 
-@QuarkusIntegrationTest
+//@QuarkusIntegrationTest
+// this was part of PoC
 class GitClientIT {
 
     GitClient gitClient;
@@ -21,7 +21,7 @@ class GitClientIT {
 
     @BeforeEach
     public void setup(@TempDir File tempDir) {
-        gitConfig = new TestGitConfig("PatriciuBogatu", "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", "https://github.com/PatriciuBogatu/gitj-poc.git", "test", tempDir.getAbsolutePath()) ;
+        gitConfig = new TestGitConfig("PatriciuBogatu", "", "https://github.com/PatriciuBogatu/gitj-poc.git", "test", tempDir.getAbsolutePath()) ;
         gitClient = new GitClient(gitConfig);
     }
 

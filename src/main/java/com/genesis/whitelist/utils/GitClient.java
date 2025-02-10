@@ -1,13 +1,11 @@
 package com.genesis.whitelist.utils;
 
-import com.genesis.whitelist.services.configs.GitConfig;
-import com.genesis.whitelist.services.impl.GitServiceImpl;
+import com.genesis.whitelist.configs.GitConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.io.File;
