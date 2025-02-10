@@ -4,6 +4,10 @@ import * as bootstrap from 'bootstrap';
 const BASE_URL = "http://localhost:8080";
 const GET = 'GET';
 const POST = 'POST';
+const ADD_BTN_TEXT = 'ADD >>';
+const REMOVE_BTN_TEXT = 'REMOVE';
+const NEW_IPS_ADDITION_LABEL = 'IPs to ADD';
+const NEW_IPS_REMOVAL_LABEL = 'IPs to REMOVE';
 
 document.addEventListener( 'DOMContentLoaded', async function () {
 	const ipActionBtn = document.getElementById( 'ip-action-btn' );
@@ -21,15 +25,15 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	// Function to toggle the button text and styling
 	const updateIpActionButton = () => {
 		if ( addIpsOption.checked ) {
-			ipActionBtn.textContent = "Add >>";
+			ipActionBtn.textContent = ADD_BTN_TEXT;
 			ipActionBtn.classList.remove( "btn-danger" );
 			ipActionBtn.classList.add( "btn-success" );
-			newIpsLabel.innerHTML = "IPs to ADD"
+			newIpsLabel.innerHTML = NEW_IPS_ADDITION_LABEL;
 		} else {
-			ipActionBtn.textContent = "REMOVE";
+			ipActionBtn.textContent = REMOVE_BTN_TEXT;
 			ipActionBtn.classList.remove( "btn-success" );
 			ipActionBtn.classList.add( "btn-danger" );
-			newIpsLabel.innerHTML = "IPs to REMOVE"
+			newIpsLabel.innerHTML = NEW_IPS_REMOVAL_LABEL;
 		}
 	};
 
@@ -118,7 +122,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	};
 
 	const isRemove = () => {
-		return removeIpsOption.checked && ipActionBtn.textContent == "REMOVE" && newIpsLabel.innerHTML == "IPs to REMOVE"
+		return removeIpsOption.checked && ipActionBtn.textContent == REMOVE_BTN_TEXT && newIpsLabel.innerHTML == NEW_IPS_REMOVAL_LABEL;
 	}
 
 	disableFields();
@@ -263,7 +267,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 				await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
 				await fetchIpsForPartner( selectedPartner );
 			}
-			
+
 		}
 		else {
 			const confirmAdd = confirm( `Are you sure you want to add the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
