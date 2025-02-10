@@ -6,7 +6,6 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <project.version>1.0-SNAPSHOT</project.version>
         <container.image.name>${artifactId}</container.image.name>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
