@@ -237,70 +237,43 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 			alert( `Invalid IP(s) detected:\n${ invalidIps.join( '\n' ) }` );
 			return;
 		}
+
+		const currentIps = currentIpsTextarea.value
+			.split( '\n' )
+			.map( ip => ip.trim() )
+			.filter( ip => ip.length > 0 );
+
+		const selectedPartner = partnerInput.value.trim() || null;
+		const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
+
 		if ( isRemove() ) {
+			// Remove case: Check if any of the IPs do not exist
+			const ipsToRemoveNotWhitelisted = newIps.filter( ip => !currentIps.includes( ip ) );
+			if ( ipsToRemoveNotWhitelisted.length > 0 ) {
+				alert( `The following IPs you are trying to remove are NOT whitelisted:\n${ ipsToRemoveNotWhitelisted.join( '\n' ) }` );
+				return;
+			}
+
 			const confirmRemove = confirm( `Are you sure you want to remove the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
 			if ( confirmRemove ) {
-				const currentIps = currentIpsTextarea.value
-					.split( '\n' )
-					.map( ip => ip.trim() )
-					.filter( ip => ip.length > 0 );
-
-				const uniqueIps = Array.from( new Set( [ ...currentIps, ...newIps ] ) );
-
-				currentIpsTextarea.value = uniqueIps.join( '\n' );
-				newIpsTextarea.value = '';
-				newIpsTextarea.focus();
-
-				const selectedPartner = partnerInput.value.trim() || null;
-				const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
-				const comments = commentsTextarea.value.trim();
-
-				const logObject = {
-					partner: selectedPartner,
-					whitelisting: selectedWhitelist,
-					ips: uniqueIps,
-					comments: comments
-				};
-
-				ipActionBtn.disabled = true;
-
 				await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
 				await fetchIpsForPartner( selectedPartner );
 			}
+		} else {
+			// Add case: Check if any of the IPs already exist
+			const ipsToAddAlreadyWhitelisted = newIps.filter( ip => currentIps.includes( ip ) );
+			if ( ipsToAddAlreadyWhitelisted.length > 0 ) {
+				alert( `The following IPs already exist:\n${ ipsToAddAlreadyWhitelisted.join( '\n' ) }` );
+				return;
+			}
 
-		}
-		else {
 			const confirmAdd = confirm( `Are you sure you want to add the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
 			if ( confirmAdd ) {
-				const currentIps = currentIpsTextarea.value
-					.split( '\n' )
-					.map( ip => ip.trim() )
-					.filter( ip => ip.length > 0 );
-
-				const uniqueIps = Array.from( new Set( [ ...currentIps, ...newIps ] ) );
-
-				currentIpsTextarea.value = uniqueIps.join( '\n' );
-				newIpsTextarea.value = '';
-				newIpsTextarea.focus();
-
-				const selectedPartner = partnerInput.value.trim() || null;
-				const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
-				const comments = commentsTextarea.value.trim();
-
-				const logObject = {
-					partner: selectedPartner,
-					whitelisting: selectedWhitelist,
-					ips: uniqueIps,
-					comments: comments
-				};
-
-				ipActionBtn.disabled = true;
-
 				await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
 				await fetchIpsForPartner( selectedPartner );
 			}
 		}
 
-
+		ipActionBtn.disabled = true;
 	} );
 } );
