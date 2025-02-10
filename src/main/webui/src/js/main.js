@@ -117,6 +117,10 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 		ipActionBtn.disabled = newIpsTextarea.value.trim() === '' || commentsTextarea.value.trim() === '';
 	};
 
+	const isRemove = () => {
+		return removeIpsOption.checked && ipActionBtn.textContent == "REMOVE" && newIpsLabel.innerHTML == "IPs to REMOVE"
+	}
+
 	disableFields();
 
 	// Operator input event listener
@@ -229,35 +233,70 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 			alert( `Invalid IP(s) detected:\n${ invalidIps.join( '\n' ) }` );
 			return;
 		}
+		if ( isRemove() ) {
+			const confirmRemove = confirm( `Are you sure you want to remove the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
+			if ( confirmRemove ) {
+				const currentIps = currentIpsTextarea.value
+					.split( '\n' )
+					.map( ip => ip.trim() )
+					.filter( ip => ip.length > 0 );
 
-		const confirmAdd = confirm( `Are you sure you want to add the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
-		if ( confirmAdd ) {
-			const currentIps = currentIpsTextarea.value
-				.split( '\n' )
-				.map( ip => ip.trim() )
-				.filter( ip => ip.length > 0 );
+				const uniqueIps = Array.from( new Set( [ ...currentIps, ...newIps ] ) );
 
-			const uniqueIps = Array.from( new Set( [ ...currentIps, ...newIps ] ) );
+				currentIpsTextarea.value = uniqueIps.join( '\n' );
+				newIpsTextarea.value = '';
+				newIpsTextarea.focus();
 
-			currentIpsTextarea.value = uniqueIps.join( '\n' );
-			newIpsTextarea.value = '';
-			newIpsTextarea.focus();
+				const selectedPartner = partnerInput.value.trim() || null;
+				const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
+				const comments = commentsTextarea.value.trim();
 
-			const selectedPartner = partnerInput.value.trim() || null;
-			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
-			const comments = commentsTextarea.value.trim();
+				const logObject = {
+					partner: selectedPartner,
+					whitelisting: selectedWhitelist,
+					ips: uniqueIps,
+					comments: comments
+				};
 
-			const logObject = {
-				partner: selectedPartner,
-				whitelisting: selectedWhitelist,
-				ips: uniqueIps,
-				comments: comments
-			};
+				ipActionBtn.disabled = true;
 
-			ipActionBtn.disabled = true;
-
-			await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
-			await fetchIpsForPartner( selectedPartner );
+				await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
+				await fetchIpsForPartner( selectedPartner );
+			}
+			
 		}
+		else {
+			const confirmAdd = confirm( `Are you sure you want to add the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
+			if ( confirmAdd ) {
+				const currentIps = currentIpsTextarea.value
+					.split( '\n' )
+					.map( ip => ip.trim() )
+					.filter( ip => ip.length > 0 );
+
+				const uniqueIps = Array.from( new Set( [ ...currentIps, ...newIps ] ) );
+
+				currentIpsTextarea.value = uniqueIps.join( '\n' );
+				newIpsTextarea.value = '';
+				newIpsTextarea.focus();
+
+				const selectedPartner = partnerInput.value.trim() || null;
+				const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
+				const comments = commentsTextarea.value.trim();
+
+				const logObject = {
+					partner: selectedPartner,
+					whitelisting: selectedWhitelist,
+					ips: uniqueIps,
+					comments: comments
+				};
+
+				ipActionBtn.disabled = true;
+
+				await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
+				await fetchIpsForPartner( selectedPartner );
+			}
+		}
+
+
 	} );
 } );
