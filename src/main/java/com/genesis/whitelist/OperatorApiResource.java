@@ -69,7 +69,7 @@ public class OperatorApiResource implements OperatorApi {
             return prepareCorsResponse(Response.status(Response.Status.BAD_REQUEST)
                     .build());
         }
-        return prepareCorsResponse(Response.ok()
+        return prepareCorsResponse(Response.status(Response.Status.CREATED)
             .build());
     }
 
