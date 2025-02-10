@@ -186,6 +186,7 @@ components:
           description: List of IPs/CIDR blocks to add or remove
       example:
         whitelistType: API
+        updateType: REMOVAL
         ips: [ "1.2.3.4", "1.2.3.5/31" ]
   securitySchemes:
     BasicAuth:
