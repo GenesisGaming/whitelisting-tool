@@ -56,10 +56,14 @@ public class GitServiceImpl implements GitService {
     }
 
     @Override
-    public List<Operator> getAllOperators() {
+    public List<Operator> getAllOperators() throws RuntimeException {
         LOG.info("Pulling changes");
         gitClient.pullChanges();
-        List<Operator> operators = Arrays.stream(partnersDir.listFiles())
+        final File[] fileList = partnersDir.listFiles();
+        if (fileList == null) {
+            throw new RuntimeException("Error retrieving the operators' files");
+        }
+        List<Operator> operators = Arrays.stream(fileList)
                 .map(f -> new Operator(f.getName().replace(".conf", "")))
                 .toList();
 
@@ -87,7 +91,9 @@ public class GitServiceImpl implements GitService {
             LOG.error("Couldn't write to file: {}", e);
         }
 
-        gitClient.commitChanges("Adding new IPs for " + operatorName, "Backendapp", "backend@genesis.com");
+        gitClient.commitChanges("Adding new IPs for " + operatorName + ".\n\n" + request.getComments(),
+            "Backendapp",
+            "backend@genesis.com");
         gitClient.pushChanges();
     }
 
@@ -109,7 +115,9 @@ public class GitServiceImpl implements GitService {
             LOG.error("Could't write to file: {}", e);
         }
 
-        gitClient.commitChanges("Removing IPs for " + operatorName, "Backendapp", "backend@genesis.com");
+        gitClient.commitChanges("Removing IPs for " + operatorName + ".\n\n" + request.getComments(),
+            "Backendapp",
+            "backend@genesis.com");
         gitClient.pushChanges();
     }
 

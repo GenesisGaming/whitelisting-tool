@@ -1,21 +1,17 @@
 package com.genesis.whitelist;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.genesis.whitelist.model.Operator;
 import com.genesis.whitelist.model.UpdateIpsRequest;
-import io.restassured.http.ContentType;
-
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 class OperatorApiResourceTest {
@@ -90,6 +86,7 @@ class OperatorApiResourceTest {
                 .statusCode(200);
 
         // checking the IPs list after addition and removal
+        @SuppressWarnings("rawtypes")
         ArrayList updatedIps = given()
                 .when().get("/operator/" +  toAdd.getCode() +"/ip-list")
                 .then()
@@ -98,6 +95,7 @@ class OperatorApiResourceTest {
                 .body()
                 .as(ArrayList.class);
 
+        //noinspection unchecked
         assertTrue(updatedIps.containsAll(List.of("1.5.5.9", "4.4.4.4")));
         assertEquals(2, updatedIps.size());
     }
