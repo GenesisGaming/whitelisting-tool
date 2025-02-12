@@ -66,7 +66,7 @@ class OperatorApiResourceTest {
                 .contentType(ContentType.JSON)
                 .body(addIpsRequest)
                 .when()
-                .patch("/operator/" +  toAdd.getCode() +"/ip")
+                .patch("/operator/" +  toAdd.getCode() +"/ip-list")
                 .then()
                 .statusCode(200);
 
@@ -85,13 +85,13 @@ class OperatorApiResourceTest {
                 .contentType(ContentType.JSON)
                 .body(removeIpsRequest)
                 .when()
-                .patch("/operator/" +  toAdd.getCode() +"/ip")
+                .patch("/operator/" +  toAdd.getCode() +"/ip-list")
                 .then()
                 .statusCode(200);
 
         // checking the IPs list after addition and removal
         ArrayList updatedIps = given()
-                .when().get("/operator/" +  toAdd.getCode() +"/ip")
+                .when().get("/operator/" +  toAdd.getCode() +"/ip-list")
                 .then()
                 .extract()
                 .response()
@@ -126,7 +126,7 @@ class OperatorApiResourceTest {
     @Test
     void testGetOperatorIpListFails() {
         given()
-                .when().get("/operator/nonexisting/ip")
+                .when().get("/operator/nonexisting/ip-list")
                 .then()
                 .statusCode(404)
                 .extract().response();
@@ -151,7 +151,7 @@ class OperatorApiResourceTest {
                 .contentType(ContentType.JSON)
                 .body(request)
                 .when()
-                .patch("/operator/nonexisting/ip")
+                .patch("/operator/nonexisting/ip-list")
                 .then()
                 .statusCode(404)
                 .extract().response();
@@ -177,7 +177,7 @@ class OperatorApiResourceTest {
                 .contentType(ContentType.JSON)
                 .body(request)
                 .when()
-                .patch("/operator/nonexisting/ip")
+                .patch("/operator/nonexisting/ip-list")
                 .then()
                 .statusCode(404)
                 .extract().response();

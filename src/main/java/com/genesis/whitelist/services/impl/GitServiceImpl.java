@@ -8,7 +8,6 @@ import com.genesis.whitelist.services.GitService;
 import com.genesis.whitelist.utils.GitClient;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.WebApplicationException;
 import org.jboss.logging.Logger;
 
 import java.io.*;
@@ -19,8 +18,8 @@ import java.util.*;
 public class GitServiceImpl implements GitService {
     private GitClient gitClient;
     private File partnersDir;
-    private final String template = "allow    [IP];";
-    private final String extension = ".conf";
+    private final String FILE_LINE_TEMPLATE = "allow    [IP];";
+    private final String FILE_EXTENSION = ".conf";
     private static final Logger LOG = Logger.getLogger(GitServiceImpl.class);
 
     @Inject
@@ -43,7 +42,7 @@ public class GitServiceImpl implements GitService {
             String line;
             while ((line = reader.readLine()) != null) {
                 if(line.contains("allow")){
-                    String ip = line.split(" {4}")[1].replace(";", "");
+                    String ip = line.trim().split(" {4}")[1].replace(";", "");
                     ips.add(ip);
                 }
             }
@@ -77,7 +76,7 @@ public class GitServiceImpl implements GitService {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(operatorFile, true))) {
             for(var ip: ipsToAdd){
                 if(!currentIPs.contains(ip)){
-                    writer.append(template.replace("[IP]", ip))
+                    writer.append(FILE_LINE_TEMPLATE.replace("[IP]", ip))
                             .append("\n");
 
                     currentIPs.add(ip);
@@ -102,7 +101,7 @@ public class GitServiceImpl implements GitService {
 
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(operatorFile, false))) {
             for(var ip: currentIPs){
-                writer.append(template.replace("[IP]", ip))
+                writer.append(FILE_LINE_TEMPLATE.replace("[IP]", ip))
                         .append("\n");
             }
 
@@ -137,7 +136,7 @@ public class GitServiceImpl implements GitService {
     private Optional<File> getOperatorFile(String operatorName){
         File toRead = null;
         for(var file : partnersDir.listFiles()){
-            if(file.getName().equals(operatorName + extension)){
+            if(file.getName().equals(operatorName + FILE_EXTENSION)){
                 toRead = file;
             }
         }
@@ -147,7 +146,7 @@ public class GitServiceImpl implements GitService {
 
     private boolean operatorExists(String operatorName){
         return Arrays.stream(partnersDir.listFiles())
-                .anyMatch(f -> f.getName().equals(operatorName + extension));
+                .anyMatch(f -> f.getName().equals(operatorName + FILE_EXTENSION));
     }
 
 }

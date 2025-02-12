@@ -53,14 +53,14 @@ paths:
         '201':
           description: Successful operation
         '400':
-          description: Invalid input format or the partner already existed
+          description: Invalid input format or the operator already existed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
         '500':
           description: Internal server error
-  /operator/{operatorCode}/ip:
+  /operator/{operatorCode}/ip-list:
     get:
       tags:
         - Operator
@@ -104,8 +104,11 @@ paths:
     patch:
       tags:
         - Operator
-      summary: Update partner's IP list
-      description: Add or remove IPs from partner's list
+      summary: Update operator's IP list
+      description: |-
+        Add or remove IPs from operator's list. All the adding or removing operations have to be completed
+        to consider the result successful. Duplicated IPs will not be added and not present IPs will not be 
+        removed, but it will not be considered as an error.
       operationId: updateIps
       parameters:
         - name: operatorCode
