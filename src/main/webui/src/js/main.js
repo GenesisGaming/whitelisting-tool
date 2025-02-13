@@ -53,7 +53,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	const fetchIpsForPartner = async ( partnerName ) => {
 		try {
 			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
-			const ips = await sendRequest( GET, `/operator/${ partnerName }/ip?whitelistType=${ selectedWhitelist }` );
+			const ips = await sendRequest( GET, `/operator/${ partnerName }/ip-list?whitelistType=${ selectedWhitelist }` );
 			// Update the currentIpsTextarea with each IP on a new line
 			currentIpsTextarea.value = ips.join( "\n" );
 		} catch ( error ) {
@@ -233,7 +233,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 			addIpsBtn.disabled = true;
 
-			await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
+			await sendRequest( POST, `/operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
 			await fetchIpsForPartner( selectedPartner );
 		}
 	} );

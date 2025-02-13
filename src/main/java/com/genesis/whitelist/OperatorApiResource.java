@@ -1,8 +1,10 @@
 package com.genesis.whitelist;
 
-import com.genesis.whitelist.model.AddIpsRequest;
+import com.genesis.whitelist.exceptions.OperatorAlreadyExistsException;
+import com.genesis.whitelist.exceptions.OperatorMissingException;
 import com.genesis.whitelist.model.Operator;
-import jakarta.inject.Inject;
+import com.genesis.whitelist.model.UpdateIpsRequest;
+import com.genesis.whitelist.services.GitService;
 import jakarta.ws.rs.OPTIONS;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Context;
@@ -17,14 +19,18 @@ public class OperatorApiResource implements OperatorApi {
 
     private static final Logger LOG = Logger.getLogger(OperatorApiResource.class);
 
-    @Inject
-    OperatorApiMockGenerator mockGenerator;
+    private final com.genesis.whitelist.CorsConfig corsConfig;
+    private final GitService gitService;
+    private final OperatorApiMockGenerator mockGenerator;
 
-    @Inject
-    com.genesis.whitelist.CorsConfig corsConfig;
-
-    @ConfigProperty(name = "operator-api.use-mock", defaultValue = "false")
+    @ConfigProperty(name = "operator-api.use-mock")
     boolean useMock;
+
+    public OperatorApiResource(com.genesis.whitelist.CorsConfig corsConfig, GitService gitService, OperatorApiMockGenerator mockGenerator) {
+        this.corsConfig = corsConfig;
+        this.gitService = gitService;
+        this.mockGenerator = mockGenerator;
+    }
 
     @OPTIONS
     @Path("/{path:.*}")
@@ -33,18 +39,29 @@ public class OperatorApiResource implements OperatorApi {
     }
 
     @Override
-    public Response addIps(String operatorCode, AddIpsRequest addIpsRequest) {
+    public Response updateIps(String operatorCode, UpdateIpsRequest updateIpsRequest) {
         LOG.infof("addIps called - Origin: %s",
             httpHeaders.getHeaderString("Origin"));
 
         if (useMock) {
-            LOG.info("Using mock response for addIps");
-            return prepareCorsResponse(mockGenerator.mockAddIps(operatorCode, addIpsRequest));
+            LOG.info("Using mock response for updateIps");
+            return prepareCorsResponse(mockGenerator.mockUpdateIps(operatorCode, updateIpsRequest));
         }
 
-        // Real implementation logic here
+        try {
+            if (updateIpsRequest.getUpdateType().equals(UpdateIpsRequest.UpdateTypeEnum.ADDITION)) {
+                LOG.info("addIps - ADDITION");
+                gitService.addNewIPs(operatorCode, updateIpsRequest);
+            } else {
+                LOG.info("addIps - REMOVAL");
+                gitService.removeIPs(operatorCode, updateIpsRequest);
+            }
+        }catch(OperatorMissingException e){
+            LOG.error("Operator was not found in the files list");
+            return prepareCorsResponse(Response.status(Response.Status.NOT_FOUND)
+                    .build());
+        }
         return prepareCorsResponse(Response.ok()
-            .header("test", "addIps : " + operatorCode + " IPs: " + addIpsRequest.getNewIps())
             .build());
     }
 
@@ -58,9 +75,14 @@ public class OperatorApiResource implements OperatorApi {
             return prepareCorsResponse(mockGenerator.mockAddOperator(operator));
         }
 
-        // Real implementation logic here
-        return prepareCorsResponse(Response.ok()
-            .header("test", "addOperator: " + operator.getCode())
+        try{
+            gitService.addNewOperator(operator);
+        }catch (OperatorAlreadyExistsException e){
+            LOG.error("Operator already exists in the repository");
+            return prepareCorsResponse(Response.status(Response.Status.BAD_REQUEST)
+                    .build());
+        }
+        return prepareCorsResponse(Response.status(Response.Status.CREATED)
             .build());
     }
 
@@ -74,10 +96,15 @@ public class OperatorApiResource implements OperatorApi {
             return prepareCorsResponse(mockGenerator.mockGetOperatorIpList(operatorCode, whitelistType));
         }
 
-        // Real implementation logic here
-        return prepareCorsResponse(Response.ok()
-            .header("test", "getOperatorIpList: " + operatorCode)
-            .build());
+        try{
+            var ips = gitService.getOperatorIPs(operatorCode);
+            return prepareCorsResponse(Response.ok(ips)
+                    .build());
+        }catch (OperatorMissingException e){
+            LOG.error("Operator was not found in the files list");
+            return prepareCorsResponse(Response.status(Response.Status.NOT_FOUND)
+                    .build());
+        }
     }
 
     @Override
@@ -90,9 +117,7 @@ public class OperatorApiResource implements OperatorApi {
             return prepareCorsResponse(mockGenerator.mockGetOperators());
         }
 
-        // Real implementation logic here
-        return prepareCorsResponse(Response.ok()
-            .header("test", "getOperators")
+        return prepareCorsResponse(Response.ok(gitService.getAllOperators())
             .build());
     }
 

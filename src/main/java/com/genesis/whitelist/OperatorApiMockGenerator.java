@@ -1,7 +1,7 @@
 package com.genesis.whitelist;
 
-import com.genesis.whitelist.model.AddIpsRequest;
 import com.genesis.whitelist.model.Operator;
+import com.genesis.whitelist.model.UpdateIpsRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.core.Response;
 import java.net.URI;
@@ -14,23 +14,25 @@ import org.jboss.logging.Logger;
 public class OperatorApiMockGenerator {
 
     private static final Logger LOG = Logger.getLogger(OperatorApiMockGenerator.class);
+    public static final String NON_EXISTING_OPERATOR = "nonexisting";
+    public static final String EXISTING_OPERATOR = "EXISTING_OPERATOR";
 
-    public static Response mockAddIps(String operatorCode, AddIpsRequest addIpsRequest) {
-        LOG.info("mockAddIps called for operator: " + operatorCode + " and IPs: " + addIpsRequest);
-        return Response.ok()
-            .entity(Map.of(
-                "whitelistType", addIpsRequest.getWhitelistType(),
-                "newIps", addIpsRequest.getNewIps()
-            ))
-            .header("test", "addIps : " + operatorCode + " IPs: " + addIpsRequest.getNewIps())
-            .build();
+    public Response mockUpdateIps(String operatorCode, UpdateIpsRequest updateIpsRequest) {
+        LOG.info("mockUpdateIps called for operator: " + operatorCode + " and IPs: " + updateIpsRequest);
+        if (NON_EXISTING_OPERATOR.equals(operatorCode)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            return Response.ok()
+                .header("test", "updateIps : " + operatorCode + " IPs: " + updateIpsRequest.getIps())
+                .build();
+        }
     }
 
-    public static Response mockAddOperator(Operator operator) {
+    public Response mockAddOperator(Operator operator) {
         LOG.info("mockAddOperator called for operator: " + operator.getCode());
 
         // Check if the operator code is "EXISTING_OPERATOR"
-        if ("EXISTING_OPERATOR".equals(operator.getCode())) {
+        if (EXISTING_OPERATOR.equals(operator.getCode())) {
             // Return a 400 Bad Request with the specified error body
             return Response.status(Response.Status.BAD_REQUEST)
                 .entity(Map.of(
@@ -51,7 +53,7 @@ public class OperatorApiMockGenerator {
             .build();
     }
 
-    public static Response mockGetOperatorIpList(String operatorCode, String whitelistType) {
+    public Response mockGetOperatorIpList(String operatorCode, String whitelistType) {
         LOG.info("mockGetOperatorIpList called for operator: " + operatorCode + " with whitelistType: " + whitelistType);
 
         // Create a mock IP list response
@@ -61,13 +63,17 @@ public class OperatorApiMockGenerator {
             "172.16.0.1"
         );
 
-        return Response.ok()
-            .entity(mockIps)
-            .header("test", "getOperatorIpList: " + operatorCode)
-            .build();
+        if (NON_EXISTING_OPERATOR.equals(operatorCode)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            return Response.ok()
+                .entity(mockIps)
+                .header("test", "getOperatorIpList: " + operatorCode)
+                .build();
+        }
     }
 
-    public static Response mockGetOperators() {
+    public Response mockGetOperators() {
         LOG.info("mockGetOperators called");
 
         // Create a mock list of operators
@@ -83,7 +89,7 @@ public class OperatorApiMockGenerator {
             .build();
     }
 
-    private static Operator createMockOperator(String code) {
+    private Operator createMockOperator(String code) {
         Operator operator = new Operator();
         operator.setCode(code);
         return operator;
