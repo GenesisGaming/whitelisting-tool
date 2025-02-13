@@ -1,4 +1,4 @@
-package com.genesis.whitelist;
+package com.gn.whitelist.configs;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

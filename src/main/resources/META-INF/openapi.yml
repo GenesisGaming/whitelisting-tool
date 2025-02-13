@@ -4,12 +4,10 @@ info:
   description: |-
     The goal of this API is to manage the Ip lists that are registered for each operator, for them to be able to access 
     GN system through the network.
-  contact:
-    email: genesis_dev@expenti.com
   license:
     name: Expenti
     url: https://www.expenti.com/
-  version: "0.4"
+  version: "0.5"
 servers:
   - url: http://localhost:8080
 tags:

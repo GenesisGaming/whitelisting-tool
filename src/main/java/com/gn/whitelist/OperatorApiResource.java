@@ -1,10 +1,11 @@
-package com.genesis.whitelist;
+package com.gn.whitelist;
 
-import com.genesis.whitelist.exceptions.OperatorAlreadyExistsException;
-import com.genesis.whitelist.exceptions.OperatorMissingException;
-import com.genesis.whitelist.model.Operator;
-import com.genesis.whitelist.model.UpdateIpsRequest;
-import com.genesis.whitelist.services.GitService;
+import com.gn.whitelist.configs.CorsConfig;
+import com.gn.whitelist.exceptions.OperatorAlreadyExistsException;
+import com.gn.whitelist.exceptions.OperatorMissingException;
+import com.gn.whitelist.model.Operator;
+import com.gn.whitelist.model.UpdateIpsRequest;
+import com.gn.whitelist.dao.WhitelistingStorageService;
 import jakarta.ws.rs.OPTIONS;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Context;
@@ -19,16 +20,16 @@ public class OperatorApiResource implements OperatorApi {
 
     private static final Logger LOG = Logger.getLogger(OperatorApiResource.class);
 
-    private final com.genesis.whitelist.CorsConfig corsConfig;
-    private final GitService gitService;
+    private final CorsConfig corsConfig;
+    private final WhitelistingStorageService whitelistingStorageService;
     private final OperatorApiMockGenerator mockGenerator;
 
     @ConfigProperty(name = "operator-api.use-mock")
     boolean useMock;
 
-    public OperatorApiResource(com.genesis.whitelist.CorsConfig corsConfig, GitService gitService, OperatorApiMockGenerator mockGenerator) {
+    public OperatorApiResource(CorsConfig corsConfig, WhitelistingStorageService whitelistingStorageService, OperatorApiMockGenerator mockGenerator) {
         this.corsConfig = corsConfig;
-        this.gitService = gitService;
+        this.whitelistingStorageService = whitelistingStorageService;
         this.mockGenerator = mockGenerator;
     }
 
@@ -51,10 +52,10 @@ public class OperatorApiResource implements OperatorApi {
         try {
             if (updateIpsRequest.getUpdateType().equals(UpdateIpsRequest.UpdateTypeEnum.ADDITION)) {
                 LOG.info("addIps - ADDITION");
-                gitService.addNewIPs(operatorCode, updateIpsRequest);
+                whitelistingStorageService.addNewIPs(operatorCode, updateIpsRequest);
             } else {
                 LOG.info("addIps - REMOVAL");
-                gitService.removeIPs(operatorCode, updateIpsRequest);
+                whitelistingStorageService.removeIPs(operatorCode, updateIpsRequest);
             }
         }catch(OperatorMissingException e){
             LOG.error("Operator was not found in the files list");
@@ -76,7 +77,7 @@ public class OperatorApiResource implements OperatorApi {
         }
 
         try{
-            gitService.addNewOperator(operator);
+            whitelistingStorageService.addNewOperator(operator);
         }catch (OperatorAlreadyExistsException e){
             LOG.error("Operator already exists in the repository");
             return prepareCorsResponse(Response.status(Response.Status.BAD_REQUEST)
@@ -97,7 +98,7 @@ public class OperatorApiResource implements OperatorApi {
         }
 
         try{
-            var ips = gitService.getOperatorIPs(operatorCode);
+            var ips = whitelistingStorageService.getOperatorIPs(operatorCode);
             return prepareCorsResponse(Response.ok(ips)
                     .build());
         }catch (OperatorMissingException e){
@@ -117,7 +118,7 @@ public class OperatorApiResource implements OperatorApi {
             return prepareCorsResponse(mockGenerator.mockGetOperators());
         }
 
-        return prepareCorsResponse(Response.ok(gitService.getAllOperators())
+        return prepareCorsResponse(Response.ok(whitelistingStorageService.getAllOperators())
             .build());
     }
 
