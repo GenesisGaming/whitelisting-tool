@@ -195,6 +195,67 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>exec-maven-plugin</artifactId>-->
+<!--                <version>3.1.0</version>-->
+<!--                <executions>-->
+<!--                    &lt;!&ndash; Install npm dependencies &ndash;&gt;-->
+<!--                    <execution>-->
+<!--                        <id>npm-install</id>-->
+<!--                        <phase>generate-resources</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>exec</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <executable>npm</executable>-->
+<!--                            <arguments>-->
+<!--                                <argument>install</argument>-->
+<!--                            </arguments>-->
+<!--                            <workingDirectory>${project.basedir}/src/main/webui</workingDirectory>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                    &lt;!&ndash; Run npm build &ndash;&gt;-->
+<!--                    <execution>-->
+<!--                        <id>npm-build</id>-->
+<!--                        <phase>generate-resources</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>exec</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <executable>npm</executable>-->
+<!--                            <arguments>-->
+<!--                                <argument>run</argument>-->
+<!--                                <argument>build</argument>-->
+<!--                            </arguments>-->
+<!--                            <workingDirectory>${project.basedir}/src/main/webui</workingDirectory>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+            <!-- Maven Resources Plugin to Copy Built Assets -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-frontend-assets</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/webui/dist/</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -217,6 +278,7 @@
                                 <additionalProperty>useSwaggerAnnotations=true</additionalProperty>
                                 <additionalProperty>supportAsync=false</additionalProperty>
                                 <additionalProperty>supportCORS=true</additionalProperty>
+                                <additionalProperty>basePath=/</additionalProperty>
                             </additionalProperties>
                             <configOptions>
                                 <useTags>true</useTags>
