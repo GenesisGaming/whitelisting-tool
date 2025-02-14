@@ -1,7 +1,7 @@
-package com.genesis.whitelist;
+package com.gn.whitelist;
 
-import com.genesis.whitelist.model.Operator;
-import com.genesis.whitelist.model.UpdateIpsRequest;
+import com.gn.whitelist.model.Operator;
+import com.gn.whitelist.model.UpdateIpsRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.core.Response;
 import java.net.URI;

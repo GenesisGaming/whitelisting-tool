@@ -1,8 +1,6 @@
-package com.genesis.whitelist.configs;
+package com.gn.whitelist.dao.git;
 
-import io.quarkus.runtime.annotations.ConfigGroup;
 import io.smallrye.config.ConfigMapping;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ConfigMapping(prefix="git")
 public interface GitConfig {

@@ -1,11 +1,11 @@
-package com.genesis.whitelist;
+package com.gn.whitelist;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.genesis.whitelist.model.Operator;
-import com.genesis.whitelist.model.UpdateIpsRequest;
+import com.gn.whitelist.model.Operator;
+import com.gn.whitelist.model.UpdateIpsRequest;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.restassured.http.ContentType;
 import java.util.ArrayList;
