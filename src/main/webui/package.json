@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --base=/quinoa",
-    "build": "vite build --base=/quinoa",
-    "preview": "vite preview --base=/quinoa",
+    "dev": "vite --base=/",
+    "build": "vite build --base=/",
+    "preview": "vite preview --base=/",
     "start": "vite",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
