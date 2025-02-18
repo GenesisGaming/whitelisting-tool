@@ -6,7 +6,8 @@ If you want to learn more about Quarkus, please visit its website: <https://quar
 
 ## Running the application in dev mode
 
-You can run your application in dev mode that enables live coding using:
+You can run your application in dev mode that enables live coding. First change log.file.path in application.conf file,
+to a local/absolute path in your machine, to store the generated log files. Command:
 
 ```shell script
 ./mvnw quarkus:dev
