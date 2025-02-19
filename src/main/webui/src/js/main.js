@@ -4,10 +4,12 @@ import * as bootstrap from 'bootstrap';
 const BASE_URL = "http://localhost:8080";
 const GET = 'GET';
 const POST = 'POST';
+const PATCH = 'PATCH';
 const ADD_BTN_TEXT = 'ADD >>';
 const REMOVE_BTN_TEXT = 'REMOVE';
 const NEW_IPS_ADDITION_LABEL = 'IPs to ADD';
 const NEW_IPS_REMOVAL_LABEL = 'IPs to REMOVE';
+const UPDATE_TYPES = { ADDITION: "ADDITION", REMOVAL: "REMOVAL" };
 
 document.addEventListener( 'DOMContentLoaded', async function () {
 	const ipActionBtn = document.getElementById( 'ip-action-btn' );
@@ -53,7 +55,8 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 				body: method !== GET ? JSON.stringify( payload ) : null
 			} );
 
-			const result = await response.json();
+			const text = await response.text();
+			const result = text ? JSON.parse( text ) : {}; // Handle empty response gracefully
 
 			if ( !response.ok ) {
 				throw new Error( result.error || "Something went wrong!" );
@@ -245,6 +248,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 		const selectedPartner = partnerInput.value.trim() || null;
 		const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
+		const comments = commentsTextarea.value.trim();
 
 		if ( isRemove() ) {
 			// Remove case: Check if any of the IPs do not exist
@@ -256,7 +260,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 			const confirmRemove = confirm( `Are you sure you want to remove the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
 			if ( confirmRemove ) {
-				await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
+				await sendRequest( PATCH, `/operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "updateType": UPDATE_TYPES.REMOVAL, "ips": newIps, "comments": comments } );
 				await fetchIpsForPartner( selectedPartner );
 			}
 		} else {
@@ -269,7 +273,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 			const confirmAdd = confirm( `Are you sure you want to add the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
 			if ( confirmAdd ) {
-				await sendRequest( POST, `/operator/${ selectedPartner }/ip`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
+				await sendRequest( PATCH, `/operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "updateType": UPDATE_TYPES.ADDITION, "ips": newIps, "comments": comments } );
 				await fetchIpsForPartner( selectedPartner );
 			}
 		}
