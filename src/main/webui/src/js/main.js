@@ -81,7 +81,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	const fetchIpsForPartner = async ( partnerName ) => {
 		try {
 			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
-			const ips = await sendRequest( GET, `/operator/${ partnerName }/ip?whitelistType=${ selectedWhitelist }` );
+			const ips = await sendRequest( GET, `/operator/${ partnerName }/ip-list?whitelistType=${ selectedWhitelist }` );
 			// Update the currentIpsTextarea with each IP on a new line
 			currentIpsTextarea.value = ips.join( "\n" );
 		} catch ( error ) {
