@@ -89,7 +89,8 @@ COPY --chown=185 target/quarkus-app/app/ /deployments/app/
 COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 
 # Copy built frontend files from `target/classes/META-INF/resources`
-COPY --chown=185 target/classes/META-INF/ /deployments/app/META-INF/
+#COPY --chown=185 target/classes/META-INF/ /deployments/app/META-INF/
+COPY --chown=185 target/quinoa/build /deployments/app/META-INF/resources
 
 # Set Java options for Quarkus
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
