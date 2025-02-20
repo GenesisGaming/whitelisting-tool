@@ -1,24 +1,26 @@
 package com.gn.whitelist;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.gn.whitelist.model.Operator;
 import com.gn.whitelist.model.UpdateIpsRequest;
 import com.gn.whitelist.model.UpdateIpsRequest.UpdateTypeEnum;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 class OperatorApiResourceTest {
-    // TODO: validate also the response body of error messages
-
 
     @Test
+    @TestSecurity(user = "testReadOnly", roles = {"read-user"})
     void testGetOperators() {
         Response response = given()
           .when().get("/operator")
@@ -31,14 +33,9 @@ class OperatorApiResourceTest {
 
 
     @Test
+    @TestSecurity(user = "testAdmin", roles = {"admin"})
     void testAddOperatorFailAlreadyExists() {
-        Operator toAdd = new Operator("EXISTING_OPERATOR");
-
-        given()
-                .contentType(ContentType.JSON)
-                .body(toAdd)
-                .when()
-                .post("/operator");
+        Operator toAdd = new Operator("mockOperator");
 
         given()
                 .contentType(ContentType.JSON)
@@ -46,11 +43,15 @@ class OperatorApiResourceTest {
                 .when()
                 .post("/operator")
                 .then()
-                .statusCode(400);
+            .assertThat()
+            .statusCode(HttpStatus.SC_BAD_REQUEST)
+            .body("errorCode", equalTo("EXISTING_OPERATOR"))
+            .body("errorMessage", equalTo("The new operator already exists in Git"));
     }
 
 
     @Test
+    @TestSecurity(user = "testReadOnly", roles = {"read-user"})
     void testGetOperatorIpListFails() {
         given()
                 .when().get("/operator/nonexisting/ip-list")
@@ -62,6 +63,7 @@ class OperatorApiResourceTest {
 
 
     @Test
+    @TestSecurity(user = "testAdmin", roles = {"admin"})
     void testAddIpsFailsForNonExistingPartner() {
         UpdateIpsRequest request = new UpdateIpsRequest();
         request.setWhitelistType(UpdateIpsRequest.WhitelistTypeEnum.API);
@@ -88,6 +90,7 @@ class OperatorApiResourceTest {
 
 
     @Test
+    @TestSecurity(user = "testAdmin", roles = {"admin"})
     void testRemoveIpsFailsForNonExistingPartner() {
         UpdateIpsRequest request = new UpdateIpsRequest();
         request.setWhitelistType(UpdateIpsRequest.WhitelistTypeEnum.API);
@@ -110,6 +113,31 @@ class OperatorApiResourceTest {
                 .extract().response();
 
         // to validate error message
+    }
+
+    @Test
+    void testNotAuthenticated() {
+        Response response = given()
+            .when().get("/operator")
+            .then()
+            .extract().response();
+
+        assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @TestSecurity(user = "testReadOnly", roles = {"read-user"})
+    void testNotAllowedToPerformOperation() {
+        Operator toAdd = new Operator("mockOperator");
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(toAdd)
+            .when()
+            .post("/operator")
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.SC_FORBIDDEN);
     }
 
 }
