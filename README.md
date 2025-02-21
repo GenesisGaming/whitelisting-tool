@@ -54,6 +54,23 @@ You can then execute your native executable with: `./target/whitelisting-tool-1.
 
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 
+## Adding new users to the application
+
+You can add new users creating the corresponding properties in the .conf file, in the security section, like this one:
+
+```yaml script
+users {
+  "whitelist-support" = "50697b0f13ec0f09ae6891581ad662d5"
+}
+roles {
+  "whitelist-support" = "admin"
+}
+```
+
+whitelist-support is the user's name. The value is the MD5 digest of this string "whitelist-support:Quarkus:<password>", where Quarkus 
+indicates the default realm where the users are created. After that, you have to add the role to that user.
+
+
 ## Related Guides
 
 - REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
