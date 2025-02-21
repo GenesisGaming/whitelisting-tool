@@ -14,7 +14,7 @@ tags:
   - name: Operator
     description: Manage operators' whitelisted IPs
 security:
-  - BasicAuth: []
+  - basicAuth: []
 paths:
   /operator:
     get:
@@ -32,6 +32,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Operator'
+        '401':
+          description: Authentication credentials were missing or incorrect.
+        '403':
+          description: Forbidden - Not authorized to perform the action.
         '500':
           description: Internal server error
     post:
@@ -56,6 +60,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+        '401':
+          description: Unauthorized - Authentication credentials were missing or incorrect.
+        '403':
+          description: Forbidden - Not authorized to perform the action.
         '500':
           description: Internal server error
   /operator/{operatorCode}/ip-list:
@@ -95,6 +103,10 @@ paths:
               example: ["1.2.3.4","1.2.3.5/31"]
         '400':
           description: Invalid input format
+        '401':
+          description: Unauthorized - Authentication credentials were missing or incorrect.
+        '403':
+          description: Forbidden - Not authorized to perform the action.
         '404':
           description: Operator not found
         '500':
@@ -129,6 +141,10 @@ paths:
           description: Successful operation
         '400':
           description: Invalid input format
+        '401':
+          description: Unauthorized - Authentication credentials were missing or incorrect.
+        '403':
+          description: Forbidden - Not authorized to perform the action.
         '404':
           description: Operator not found
         '500':
@@ -197,6 +213,6 @@ components:
         ips: [ "1.2.3.4", "1.2.3.5/31" ]
         comments: CSN-0000
   securitySchemes:
-    BasicAuth:
+    basicAuth:
       type: http
       scheme: basic

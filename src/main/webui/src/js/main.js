@@ -17,26 +17,27 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 	let partners = [];
 
-	const sendRequest = async ( method, path, payload = null ) => {
-		try {
-			const response = await fetch( `${ BASE_URL }${ path }`, {
-				method,
-				headers: { 'Content-Type': 'application/json' },
-				body: method !== GET ? JSON.stringify( payload ) : null
-			} );
+    const sendRequest = async (method, path, payload = null) => {
+        try {
+            const response = await fetch(`${BASE_URL}${path}`, {
+                method,
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'include',
+                body: method !== GET ? JSON.stringify(payload) : null
+            });
 
-			const result = await response.json();
+            const result = await response.json();
 
-			if ( !response.ok ) {
-				throw new Error( result.error || "Something went wrong!" );
-			}
+            if (!response.ok) {
+                throw new Error(result.error || "Something went wrong!");
+            }
 
-			return result;
-		} catch ( error ) {
-			alert( `Request failed: ${ error.message }` );
-			throw error;
-		}
-	};
+            return result;
+        } catch (error) {
+            alert(`Request failed: ${error.message}`);
+            throw error;
+        }
+    };
 
 	// Function to fetch partners from API
 	// Function to fetch partners using sendRequest()

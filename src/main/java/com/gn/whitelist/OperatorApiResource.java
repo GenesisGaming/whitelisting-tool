@@ -6,6 +6,7 @@ import com.gn.whitelist.exceptions.OperatorMissingException;
 import com.gn.whitelist.model.Operator;
 import com.gn.whitelist.model.UpdateIpsRequest;
 import com.gn.whitelist.dao.WhitelistingStorageService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.OPTIONS;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Context;
@@ -39,6 +40,7 @@ public class OperatorApiResource implements OperatorApi {
         return prepareCorsResponse(Response.ok().build());
     }
 
+    @RolesAllowed({"admin"})
     @Override
     public Response updateIps(String operatorCode, UpdateIpsRequest updateIpsRequest) {
         LOG.infof("addIps called - Origin: %s",
@@ -66,6 +68,7 @@ public class OperatorApiResource implements OperatorApi {
             .build());
     }
 
+    @RolesAllowed({"admin"})
     @Override
     public Response addOperator(Operator operator) {
         LOG.infof("addOperator called - Origin: %s",
@@ -87,6 +90,7 @@ public class OperatorApiResource implements OperatorApi {
             .build());
     }
 
+    @RolesAllowed({"admin", "read-user"})
     @Override
     public Response getOperatorIpList(String operatorCode, String whitelistType) {
         LOG.infof("getOperatorIpList called - Origin: %s",
@@ -108,6 +112,7 @@ public class OperatorApiResource implements OperatorApi {
         }
     }
 
+    @RolesAllowed({"admin", "read-user"})
     @Override
     public Response getOperators() {
         LOG.infof("getOperators called - Origin: %s",

@@ -15,7 +15,7 @@ public class OperatorApiMockGenerator {
 
     private static final Logger LOG = Logger.getLogger(OperatorApiMockGenerator.class);
     public static final String NON_EXISTING_OPERATOR = "nonexisting";
-    public static final String EXISTING_OPERATOR = "EXISTING_OPERATOR";
+    public static final String EXISTING_OPERATOR = "mockOperator";
 
     public Response mockUpdateIps(String operatorCode, UpdateIpsRequest updateIpsRequest) {
         LOG.info("mockUpdateIps called for operator: " + operatorCode + " and IPs: " + updateIpsRequest);
