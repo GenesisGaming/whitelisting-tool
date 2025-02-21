@@ -52,6 +52,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 			const response = await fetch( `${ BASE_URL }${ path }`, {
 				method,
 				headers: { 'Content-Type': 'application/json' },
+				credentials: 'include',
 				body: method !== GET ? JSON.stringify( payload ) : null
 			} );
 
