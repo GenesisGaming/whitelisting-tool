@@ -70,6 +70,8 @@ roles {
 whitelist-support is the user's name. The value is the MD5 digest of this string "whitelist-support:Quarkus:<password>", where Quarkus 
 indicates the default realm where the users are created. After that, you have to add the role to that user.
 
+For testing purposes you can use admin/admin and read-only/read-only users that are configured currently.
+
 
 ## Related Guides
 
