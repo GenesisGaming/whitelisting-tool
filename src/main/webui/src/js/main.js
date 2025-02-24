@@ -4,9 +4,15 @@ import * as bootstrap from 'bootstrap';
 const BASE_URL = "http://localhost:8080";
 const GET = 'GET';
 const POST = 'POST';
+const PATCH = 'PATCH';
+const ADD_BTN_TEXT = 'ADD >>';
+const REMOVE_BTN_TEXT = 'REMOVE';
+const NEW_IPS_ADDITION_LABEL = 'IPs to ADD';
+const NEW_IPS_REMOVAL_LABEL = 'IPs to REMOVE';
+const UPDATE_TYPES = { ADDITION: "ADDITION", REMOVAL: "REMOVAL" };
 
 document.addEventListener( 'DOMContentLoaded', async function () {
-	const addIpsBtn = document.getElementById( 'add-ips-btn' );
+	const ipActionBtn = document.getElementById( 'ip-action-btn' );
 	const addPartnerBtn = document.getElementById( 'add-partner-btn' );
 	const newIpsTextarea = document.getElementById( 'new-ips' );
 	const currentIpsTextarea = document.getElementById( 'current-ips' );
@@ -14,39 +20,64 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	const dropdown = document.getElementById( 'partner-dropdown' );
 	const commentsTextarea = document.getElementById( 'comments' );
 	const whitelistRadios = document.querySelectorAll( 'input[name="whitelistType"]' );
+	const addIpsOption = document.getElementById( 'add-ips-option' );
+	const removeIpsOption = document.getElementById( 'remove-ips-option' );
+	const newIpsLabel = document.getElementById( 'new-ips-label' )
+
+	// Function to toggle the button text and styling
+	const updateIpActionButton = () => {
+		if ( addIpsOption.checked ) {
+			ipActionBtn.textContent = ADD_BTN_TEXT;
+			ipActionBtn.classList.remove( "btn-danger" );
+			ipActionBtn.classList.add( "btn-success" );
+			newIpsLabel.innerHTML = NEW_IPS_ADDITION_LABEL;
+		} else {
+			ipActionBtn.textContent = REMOVE_BTN_TEXT;
+			ipActionBtn.classList.remove( "btn-success" );
+			ipActionBtn.classList.add( "btn-danger" );
+			newIpsLabel.innerHTML = NEW_IPS_REMOVAL_LABEL;
+		}
+	};
+
+	addIpsOption.addEventListener( "change", updateIpActionButton );
+	removeIpsOption.addEventListener( "change", updateIpActionButton );
+
+	// Initialize correct button state
+	updateIpActionButton();
 
 	let partners = [];
 
-    const sendRequest = async (method, path, payload = null) => {
-        try {
-            const response = await fetch(`${BASE_URL}${path}`, {
-                method,
-                headers: {'Content-Type': 'application/json'},
-                credentials: 'include',
-                body: method !== GET ? JSON.stringify(payload) : null
-            });
+	const sendRequest = async ( method, path, payload = null ) => {
+		try {
+			const response = await fetch( `${ BASE_URL }${ path }`, {
+				method,
+				headers: { 'Content-Type': 'application/json' },
+				credentials: 'include',
+				body: method !== GET ? JSON.stringify( payload ) : null
+			} );
 
-            const result = await response.json();
+			const text = await response.text();
+			const result = text ? JSON.parse( text ) : {}; // Handle empty response gracefully
 
-            if (!response.ok) {
-                throw new Error(result.error || "Something went wrong!");
-            }
+			if ( !response.ok ) {
+				throw new Error( result.error || "Something went wrong!" );
+			}
 
-            return result;
-        } catch (error) {
-            alert(`Request failed: ${error.message}`);
-            throw error;
-        }
-    };
+			return result;
+		} catch ( error ) {
+			alert( `Request failed: ${ error.message }` );
+			throw error;
+		}
+	};
 
-	// Function to fetch partners from API
-	// Function to fetch partners using sendRequest()
+	// Function to fetch operators from API
+	// Function to fetch operators using sendRequest()
 	const fetchPartners = async () => {
 		try {
 			const partnersData = await sendRequest( GET, '/operator' );
 			partners = partnersData.map( partner => partner.code ); // Extract names
 		} catch ( error ) {
-			console.error( "Failed to fetch partners:", error );
+			console.error( "Failed to fetch operators:", error );
 		}
 	};
 
@@ -69,7 +100,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 		whitelistRadios.forEach( radio => radio.disabled = true );
 		newIpsTextarea.disabled = true;
 		commentsTextarea.disabled = true;
-		addIpsBtn.disabled = true;
+		ipActionBtn.disabled = true;
 		addPartnerBtn.disabled = true;
 	};
 
@@ -91,12 +122,16 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	};
 
 	const enableAddButton = () => {
-		addIpsBtn.disabled = newIpsTextarea.value.trim() === '' || commentsTextarea.value.trim() === '';
+		ipActionBtn.disabled = newIpsTextarea.value.trim() === '' || commentsTextarea.value.trim() === '';
 	};
+
+	const isRemove = () => {
+		return removeIpsOption.checked && ipActionBtn.textContent == REMOVE_BTN_TEXT && newIpsLabel.innerHTML == NEW_IPS_REMOVAL_LABEL;
+	}
 
 	disableFields();
 
-	// Partner input event listener
+	// Operator input event listener
 	partnerInput.addEventListener( 'input', function () {
 		const query = partnerInput.value.trim().toLowerCase();
 		const isPartnerValid = partners.some( partner => partner.toLowerCase() === query );
@@ -174,7 +209,6 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 			dropdown.style.display = "none";
 		}
 	} );
-
 	// Validate IP address or IP/CIDR range
 	function isValidIp ( ip ) {
 		const ipRegex = /^(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})\.(25[0-5]|2[0-4][0-9]|1\d{2}|\d{1,2})(\/(3[0-2]|[1-2]?[0-9]))?$/;
@@ -186,7 +220,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 		const partnerName = partnerInput.value.trim();
 		if ( partnerName === '' ) return;
 
-		const confirmAdd = confirm( `Are you sure you want to add "${ partnerName }" as a new partner?` );
+		const confirmAdd = confirm( `Are you sure you want to add "${ partnerName }" as a new operator?` );
 		if ( confirmAdd ) {
 			await sendRequest( POST, '/operator', { "code": partnerName } );
 			await fetchPartners(); // Refresh partners list
@@ -194,7 +228,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	} );
 
 	// Handle adding IPs
-	addIpsBtn.addEventListener( 'click', async function () {
+	ipActionBtn.addEventListener( 'click', async function () {
 		const newIps = newIpsTextarea.value
 			.split( '\n' )
 			.map( ip => ip.trim() )
@@ -208,34 +242,43 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 			return;
 		}
 
-		const confirmAdd = confirm( `Are you sure you want to add the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
-		if ( confirmAdd ) {
-			const currentIps = currentIpsTextarea.value
-				.split( '\n' )
-				.map( ip => ip.trim() )
-				.filter( ip => ip.length > 0 );
+		const currentIps = currentIpsTextarea.value
+			.split( '\n' )
+			.map( ip => ip.trim() )
+			.filter( ip => ip.length > 0 );
 
-			const uniqueIps = Array.from( new Set( [ ...currentIps, ...newIps ] ) );
+		const selectedPartner = partnerInput.value.trim() || null;
+		const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
+		const comments = commentsTextarea.value.trim();
 
-			currentIpsTextarea.value = uniqueIps.join( '\n' );
-			newIpsTextarea.value = '';
-			newIpsTextarea.focus();
+		if ( isRemove() ) {
+			// Remove case: Check if any of the IPs do not exist
+			const ipsToRemoveNotWhitelisted = newIps.filter( ip => !currentIps.includes( ip ) );
+			if ( ipsToRemoveNotWhitelisted.length > 0 ) {
+				alert( `The following IPs you are trying to remove are NOT whitelisted:\n${ ipsToRemoveNotWhitelisted.join( '\n' ) }` );
+				return;
+			}
 
-			const selectedPartner = partnerInput.value.trim() || null;
-			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
-			const comments = commentsTextarea.value.trim();
+			const confirmRemove = confirm( `Are you sure you want to remove the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
+			if ( confirmRemove ) {
+				await sendRequest( PATCH, `/operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "updateType": UPDATE_TYPES.REMOVAL, "ips": newIps, "comments": comments } );
+				await fetchIpsForPartner( selectedPartner );
+			}
+		} else {
+			// Add case: Check if any of the IPs already exist
+			const ipsToAddAlreadyWhitelisted = newIps.filter( ip => currentIps.includes( ip ) );
+			if ( ipsToAddAlreadyWhitelisted.length > 0 ) {
+				alert( `The following IPs already exist:\n${ ipsToAddAlreadyWhitelisted.join( '\n' ) }` );
+				return;
+			}
 
-			const logObject = {
-				partner: selectedPartner,
-				whitelisting: selectedWhitelist,
-				ips: uniqueIps,
-				comments: comments
-			};
-
-			addIpsBtn.disabled = true;
-
-			await sendRequest( POST, `/operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "newIps": newIps } );
-			await fetchIpsForPartner( selectedPartner );
+			const confirmAdd = confirm( `Are you sure you want to add the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
+			if ( confirmAdd ) {
+				await sendRequest( PATCH, `/operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "updateType": UPDATE_TYPES.ADDITION, "ips": newIps, "comments": comments } );
+				await fetchIpsForPartner( selectedPartner );
+			}
 		}
+
+		ipActionBtn.disabled = true;
 	} );
 } );
