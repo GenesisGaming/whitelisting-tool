@@ -1,7 +1,9 @@
 import '../scss/styles.scss';
 import * as bootstrap from 'bootstrap';
 
-const STAGING_HOST = "whitelist.star9ad.com"
+const DISABLE_API_WL = true;
+
+const STAGING_HOST = "whitelist.star9ad.com";
 const GET = 'GET';
 const POST = 'POST';
 const PATCH = 'PATCH';
@@ -22,14 +24,16 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	const whitelistRadios = document.querySelectorAll( 'input[name="whitelistType"]' );
 	const addIpsOption = document.getElementById( 'add-ips-option' );
 	const removeIpsOption = document.getElementById( 'remove-ips-option' );
-	const newIpsLabel = document.getElementById( 'new-ips-label' )
-    const baseUrl = window.location.href
+	const newIpsLabel = document.getElementById( 'new-ips-label' );
+	const boWhitlistRadio = document.getElementById( 'bo' );
+	const apiWhitlistRadio = document.getElementById( 'api' );
+	const baseUrl = window.location.href;
 
-    const isStaging = () => {
-        return window.location.hostname === STAGING_HOST;
-    }
+	const isStaging = () => {
+		return window.location.hostname === STAGING_HOST;
+	}
 
-    // Function to toggle the button text and styling
+	// Function to toggle the button text and styling
 	const updateIpActionButton = () => {
 		if ( addIpsOption.checked ) {
 			ipActionBtn.textContent = ADD_BTN_TEXT;
@@ -114,11 +118,15 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 		commentsTextarea.value = '';
 		currentIpsTextarea.value = '';
 		whitelistRadios.forEach( radio => radio.checked = false );
+		DISABLE_API_WL && ( boWhitlistRadio.checked = true );
 	};
 
 	const enableFields = () => {
 		whitelistRadios.forEach( radio => radio.disabled = false );
 		addPartnerBtn.disabled = true;
+		DISABLE_API_WL && ( apiWhitlistRadio.disabled = true );
+		DISABLE_API_WL && ( boWhitlistRadio.checked = true );
+		DISABLE_API_WL && enableIpsAndComments();
 	};
 
 	const enableIpsAndComments = () => {
