@@ -1,7 +1,7 @@
 import '../scss/styles.scss';
 import * as bootstrap from 'bootstrap';
 
-const BASE_URL = "http://localhost:8080";
+const STAGING_HOST = "whitelist.star9ad.com"
 const GET = 'GET';
 const POST = 'POST';
 const PATCH = 'PATCH';
@@ -23,8 +23,13 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	const addIpsOption = document.getElementById( 'add-ips-option' );
 	const removeIpsOption = document.getElementById( 'remove-ips-option' );
 	const newIpsLabel = document.getElementById( 'new-ips-label' )
+    const baseUrl = window.location.href
 
-	// Function to toggle the button text and styling
+    const isStaging = () => {
+        return window.location.hostname === STAGING_HOST;
+    }
+
+    // Function to toggle the button text and styling
 	const updateIpActionButton = () => {
 		if ( addIpsOption.checked ) {
 			ipActionBtn.textContent = ADD_BTN_TEXT;
@@ -49,7 +54,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 	const sendRequest = async ( method, path, payload = null ) => {
 		try {
-			const response = await fetch( `${ BASE_URL }${ path }`, {
+			const response = await fetch( `${ baseUrl }${ path }`, {
 				method,
 				headers: { 'Content-Type': 'application/json' },
 				credentials: 'include',
@@ -74,7 +79,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	// Function to fetch operators using sendRequest()
 	const fetchPartners = async () => {
 		try {
-			const partnersData = await sendRequest( GET, '/operator' );
+			const partnersData = await sendRequest( GET, 'operator' );
 			partners = partnersData.map( partner => partner.code ); // Extract names
 		} catch ( error ) {
 			console.error( "Failed to fetch operators:", error );
@@ -85,7 +90,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	const fetchIpsForPartner = async ( partnerName ) => {
 		try {
 			const selectedWhitelist = document.querySelector( 'input[name="whitelistType"]:checked' )?.value;
-			const ips = await sendRequest( GET, `/operator/${ partnerName }/ip-list?whitelistType=${ selectedWhitelist }` );
+			const ips = await sendRequest( GET, `operator/${ partnerName }/ip-list?whitelistType=${ selectedWhitelist }` );
 			// Update the currentIpsTextarea with each IP on a new line
 			currentIpsTextarea.value = ips.join( "\n" );
 		} catch ( error ) {
@@ -222,7 +227,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 		const confirmAdd = confirm( `Are you sure you want to add "${ partnerName }" as a new operator?` );
 		if ( confirmAdd ) {
-			await sendRequest( POST, '/operator', { "code": partnerName } );
+			await sendRequest( POST, 'operator', { "code": partnerName } );
 			await fetchPartners(); // Refresh partners list
 		}
 	} );
@@ -261,7 +266,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 			const confirmRemove = confirm( `Are you sure you want to remove the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
 			if ( confirmRemove ) {
-				await sendRequest( PATCH, `/operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "updateType": UPDATE_TYPES.REMOVAL, "ips": newIps, "comments": comments } );
+				await sendRequest( PATCH, `operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "updateType": UPDATE_TYPES.REMOVAL, "ips": newIps, "comments": comments } );
 				await fetchIpsForPartner( selectedPartner );
 			}
 		} else {
@@ -274,7 +279,7 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 
 			const confirmAdd = confirm( `Are you sure you want to add the following IP(s)?\n\n${ newIps.join( '\n' ) }` );
 			if ( confirmAdd ) {
-				await sendRequest( PATCH, `/operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "updateType": UPDATE_TYPES.ADDITION, "ips": newIps, "comments": comments } );
+				await sendRequest( PATCH, `operator/${ selectedPartner }/ip-list`, { "whitelistType": selectedWhitelist.toUpperCase(), "updateType": UPDATE_TYPES.ADDITION, "ips": newIps, "comments": comments } );
 				await fetchIpsForPartner( selectedPartner );
 			}
 		}

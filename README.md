@@ -56,7 +56,7 @@ If you want to learn more about building native executables, please consult <htt
 
 ## Adding new users to the application
 
-You can add new users creating the corresponding properties in the .conf file, in the security section, like this one:
+You can add new users creating the corresponding properties in the application-dev.conf file, in the security section, like this one:
 
 ```yaml script
 users {
@@ -72,6 +72,7 @@ indicates the default realm where the users are created. After that, you have to
 
 For testing purposes you can use admin/admin and read-only/read-only users that are configured currently.
 
+Then open a browser in http://localhost and write the user and password in the pop-up.
 
 ## Related Guides
 
