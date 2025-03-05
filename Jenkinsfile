@@ -6,7 +6,7 @@ node {
 
     withFolderProperties{
        //JENKINS_CONFIG_VERSION = env.JENKINS_CONFIG_VERSION
-       JENKINS_CONFIG_VERSION = feature/CSN-97035-quarkus-cicd
+       JENKINS_CONFIG_VERSION = 'feature/CSN-97035-quarkus-cicd'
        IS_QUARKUS_PROJECT = true
     }
 
