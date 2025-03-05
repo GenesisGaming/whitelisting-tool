@@ -25,8 +25,8 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	const addIpsOption = document.getElementById( 'add-ips-option' );
 	const removeIpsOption = document.getElementById( 'remove-ips-option' );
 	const newIpsLabel = document.getElementById( 'new-ips-label' );
-	const boWhitlistRadio = document.getElementById( 'bo' );
-	const apiWhitlistRadio = document.getElementById( 'api' );
+	const boWhitelistRadio = document.getElementById( 'bo' );
+	const apiWhitelistRadio = document.getElementById( 'api' );
 	const baseUrl = window.location.href;
 
 	const isStaging = () => {
@@ -118,14 +118,14 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 		commentsTextarea.value = '';
 		currentIpsTextarea.value = '';
 		whitelistRadios.forEach( radio => radio.checked = false );
-		DISABLE_API_WL && ( boWhitlistRadio.checked = true );
+		DISABLE_API_WL && ( boWhitelistRadio.checked = true );
 	};
 
 	const enableFields = () => {
 		whitelistRadios.forEach( radio => radio.disabled = false );
 		addPartnerBtn.disabled = true;
-		DISABLE_API_WL && ( apiWhitlistRadio.disabled = true );
-		DISABLE_API_WL && ( boWhitlistRadio.checked = true );
+		DISABLE_API_WL && ( apiWhitelistRadio.disabled = true );
+		DISABLE_API_WL && ( boWhitelistRadio.checked = true );
 		DISABLE_API_WL && enableIpsAndComments();
 	};
 
