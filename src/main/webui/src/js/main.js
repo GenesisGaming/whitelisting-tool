@@ -130,8 +130,12 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	};
 
 	const enableIpsAndComments = () => {
+		const selectedPartner = partnerInput.value.trim();
 		newIpsTextarea.disabled = false;
 		commentsTextarea.disabled = false;
+		if ( selectedPartner ) {
+			fetchIpsForPartner( selectedPartner );
+		}
 	};
 
 	const enableAddButton = () => {
@@ -206,11 +210,6 @@ document.addEventListener( 'DOMContentLoaded', async function () {
 	whitelistRadios.forEach( radio => {
 		radio.addEventListener( 'change', function () {
 			enableIpsAndComments();
-			const selectedPartner = partnerInput.value.trim();
-
-			if ( selectedPartner ) {
-				fetchIpsForPartner( selectedPartner );
-			}
 		} );
 	} );
 
