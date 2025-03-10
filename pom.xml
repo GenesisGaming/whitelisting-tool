@@ -334,5 +334,19 @@
                 <quarkus.native.enabled>true</quarkus.native.enabled>
             </properties>
         </profile>
+        <profile>
+            <id>env-ci</id>
+            <activation>
+                <property>
+                    <name>env</name>
+                    <value>ci</value>
+                </property>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <quarkus.container-image.build>true</quarkus.container-image.build>
+                <quarkus.container-image.push>true</quarkus.container-image.push>
+            </properties>
+        </profile>
     </profiles>
 </project>
