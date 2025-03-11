@@ -5,9 +5,7 @@ node {
     checkout scm
 
     withFolderProperties{
-       //JENKINS_CONFIG_VERSION = env.JENKINS_CONFIG_VERSION
-       JENKINS_CONFIG_VERSION = 'feature/CSN-97035-quarkus-cicd'
-       IS_QUARKUS_PROJECT = true
+       JENKINS_CONFIG_VERSION = env.JENKINS_CONFIG_VERSION
        BUILDER_JAVA_VERSION = '3.0.0-SNAPSHOT'
     }
 
