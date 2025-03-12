@@ -1,6 +1,6 @@
 # whitelisting-tool
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+This project uses Quarkus, the Supersonic Subatomic Java Framework. It is running on Java 17 and NodeJS 22 and built by maven 3.
 
 If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
 

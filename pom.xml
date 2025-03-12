@@ -7,7 +7,7 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <container.image.name>${artifactId}</container.image.name>
+        <service-name>${project.artifactId}</service-name>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -335,6 +335,20 @@
             <properties>
                 <skipITs>false</skipITs>
                 <quarkus.native.enabled>true</quarkus.native.enabled>
+            </properties>
+        </profile>
+        <profile>
+            <id>env-ci</id>
+            <activation>
+                <property>
+                    <name>env</name>
+                    <value>ci</value>
+                </property>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <quarkus.container-image.build>true</quarkus.container-image.build>
+                <quarkus.container-image.push>true</quarkus.container-image.push>
             </properties>
         </profile>
     </profiles>
