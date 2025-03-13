@@ -1,12 +1,13 @@
 # whitelisting-tool
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+This project uses Quarkus, the Supersonic Subatomic Java Framework. It is running on Java 17 and NodeJS 22 and built by maven 3.
 
 If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
 
 ## Running the application in dev mode
 
-You can run your application in dev mode that enables live coding using:
+You can run your application in dev mode that enables live coding. First change log.file.path in application.conf file,
+to a local/absolute path in your machine, to store the generated log files. Command:
 
 ```shell script
 ./mvnw quarkus:dev
@@ -52,6 +53,26 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 You can then execute your native executable with: `./target/whitelisting-tool-1.0.0-SNAPSHOT-runner`
 
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+
+## Adding new users to the application
+
+You can add new users creating the corresponding properties in the application-dev.conf file, in the security section, like this one:
+
+```yaml script
+users {
+  "whitelist-support" = "50697b0f13ec0f09ae6891581ad662d5"
+}
+roles {
+  "whitelist-support" = "admin"
+}
+```
+
+whitelist-support is the user's name. The value is the MD5 digest of this string "whitelist-support:Quarkus:<password>", where Quarkus 
+indicates the default realm where the users are created. After that, you have to add the role to that user.
+
+For testing purposes you can use admin/admin and read-only/read-only users that are configured currently.
+
+Then open a browser in http://localhost and write the user and password in the pop-up.
 
 ## Related Guides
 

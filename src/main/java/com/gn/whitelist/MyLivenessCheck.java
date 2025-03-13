@@ -1,4 +1,4 @@
-package com.genesis.whitelist;
+package com.gn.whitelist;
 
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;

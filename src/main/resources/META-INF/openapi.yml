@@ -4,18 +4,17 @@ info:
   description: |-
     The goal of this API is to manage the Ip lists that are registered for each operator, for them to be able to access 
     GN system through the network.
-  contact:
-    email: genesis_dev@expenti.com
   license:
     name: Expenti
     url: https://www.expenti.com/
-  version: "0.1"
-#  COMMENTED TO DEFAULT TO http://localhost:8080 for local dev
-#servers:
-#  - url: https://whitelisting-tool/api/v1
+  version: "0.5"
+servers:
+  - url: /
 tags:
   - name: Operator
     description: Manage operators' whitelisted IPs
+security:
+  - basicAuth: []
 paths:
   /operator:
     get:
@@ -26,18 +25,19 @@ paths:
       operationId: getOperators
       responses:
         '200':
-          description: OK
+          description: successful operation
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Operator'
+        '401':
+          description: Authentication credentials were missing or incorrect.
+        '403':
+          description: Forbidden - Not authorized to perform the action.
         '500':
           description: Internal server error
-      security:
-        - whitelist_auth:
-            - write:operators
     post:
       tags:
         - Operator
@@ -52,18 +52,21 @@ paths:
               $ref: '#/components/schemas/Operator'
         required: true
       responses:
-        '200':
-          description: Successful operation
         '201':
           description: Successful operation
         '400':
-          description: Invalid input format or the partner already existed
+          description: Invalid input format or the operator already existed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '401':
+          description: Unauthorized - Authentication credentials were missing or incorrect.
+        '403':
+          description: Forbidden - Not authorized to perform the action.
         '500':
           description: Internal server error
-      security:
-        - whitelist_auth:
-            - write:operators
-  /operator/{operatorCode}/ip:
+  /operator/{operatorCode}/ip-list:
     get:
       tags:
         - Operator
@@ -77,29 +80,46 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 30
+            maxLength: 50
+            example: Operator_1
+        - name: whitelistType
+          in: query
+          description: Type of whitelist to retrieve
+          required: true
+          schema:
+            type: string
+            enum:
+              - API
+              - BACK_OFFICE
       responses:
         '200':
-          description: OK
+          description: successful operation
           content:
             application/json:
               schema:
                 type: array
                 items:
                   type: string
+              example: ["1.2.3.4","1.2.3.5/31"]
+        '400':
+          description: Invalid input format
+        '401':
+          description: Unauthorized - Authentication credentials were missing or incorrect.
+        '403':
+          description: Forbidden - Not authorized to perform the action.
         '404':
           description: Operator not found
         '500':
           description: Internal server error
-      security:
-        - whitelist_auth:
-            - write:operators
-    post:
+    patch:
       tags:
         - Operator
-      summary: Add new IPs to the partner's list
-      description: Add new IPs to the partner's list
-      operationId: addIps
+      summary: Update operator's IP list
+      description: |-
+        Add or remove IPs from operator's list. All the adding or removing operations have to be completed
+        to consider the result successful. Duplicated IPs will not be added and not present IPs will not be 
+        removed, but it will not be considered as an error.
+      operationId: updateIps
       parameters:
         - name: operatorCode
           in: path
@@ -107,29 +127,28 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 30
+            maxLength: 50
+            example: Operator_1
       requestBody:
-        description: IP array
+        description: IP or CIDR block array
         content:
           application/json:
             schema:
-              type: array
-              items:
-                type: string
-                minLength: 1
-                maxLength: 45
+              $ref: '#/components/schemas/UpdateIpsRequest'
         required: true
       responses:
-        '200':
-          description: OK
+        '201':
+          description: Successful operation
         '400':
-          description: Invalid input format or the partner already existed
+          description: Invalid input format
+        '401':
+          description: Unauthorized - Authentication credentials were missing or incorrect.
+        '403':
+          description: Forbidden - Not authorized to perform the action.
+        '404':
+          description: Operator not found
         '500':
           description: Internal server error
-      security:
-        - whitelist_auth:
-            - write:operators
-
 components:
   schemas:
     Operator:
@@ -141,4 +160,59 @@ components:
           type: string
           description: Operator code
           minLength: 1
-          maxLength: 30
+          maxLength: 50
+      example:
+        code: Operator_1
+    ApiErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+      example:
+        errorCode: EXISTING_OPERATOR
+        errorMessage: The new operator already exists in Git
+    UpdateIpsRequest:
+      type: object
+      required:
+        - whitelistType
+        - ips
+        - updateType
+        - comments
+      properties:
+        whitelistType:
+          type: string
+          enum:
+            - API
+            - BACK_OFFICE
+          description: Type of whitelist to update
+        updateType:
+          type: string
+          enum:
+            - ADDITION
+            - REMOVAL
+        ips:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+            pattern: ^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)(?:\/(?:3[0-2]|[12]?[0-9]))?$
+          description: List of IPs/CIDR blocks to add or remove
+        comments:
+          type: string
+          maxLength: 500
+          description: text indicating the cause of the change on this whitelist
+      example:
+        whitelistType: API
+        updateType: REMOVAL
+        ips: [ "1.2.3.4", "1.2.3.5/31" ]
+        comments: CSN-0000
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
